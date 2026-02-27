@@ -287,15 +287,6 @@ app.post('/api/activities/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-app.delete('/api/activities', async (req, res) => {
-  try {
-    await Activity.deleteMany({});
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Error eliminando actividades' });
-  }
-});
-
 // ========== GOALS ==========
 app.get('/api/goals', async (req, res) => {
   try {
