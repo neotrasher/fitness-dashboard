@@ -1,0 +1,2579 @@
+{
+  "resource_state": 3,
+  "athlete": {
+    "id": 24548935,
+    "resource_state": 1
+  },
+  "name": "Tempoblock 12/06/25",
+  "distance": 14408.3,
+  "moving_time": 4512,
+  "elapsed_time": 4555,
+  "total_elevation_gain": 89,
+  "type": "Run",
+  "sport_type": "Run",
+  "workout_type": null,
+  "device_name": "Garmin Forerunner 265",
+  "id": 14775776381,
+  "start_date": "2025-06-12T10:36:13Z",
+  "start_date_local": "2025-06-12T05:36:13Z",
+  "timezone": "(GMT-05:00) America/Bogota",
+  "utc_offset": -18000,
+  "location_city": null,
+  "location_state": null,
+  "location_country": null,
+  "achievement_count": 0,
+  "kudos_count": 2,
+  "comment_count": 0,
+  "athlete_count": 1,
+  "photo_count": 0,
+  "map": {
+    "id": "a14775776381",
+    "polyline": "mxod@|uplMk@r@w@n@u@r@WRODQLYZiAz@c@h@WPkAbA_@TsA~@g@PgBlAg@XSDQGSKIOk@kCYeBKYa@yBMc@K}@I]?Qk@eCGs@Qg@AQMYEWOi@AOM{@Om@?W[uAGi@Mm@Iq@g@gC[wBe@qBGs@o@}BMy@Ce@Ke@IYUmA]oAUk@Ea@Qk@eAoBk@y@GQw@eACM@GOKYi@[]o@oAKMw@uAe@o@o@mAUW[i@KM]s@s@cA}AoCy@mAO]OQYg@KMg@_AW[g@}@g@s@I[o@sA]_@w@oA_@c@MWSUQe@IaAQK[Y{Aa@i@]CE@IEI]_@WQi@o@s@o@{@}@{BmBoDuDqDeDWY_@k@e@WWSCESQ[_@qAiAUa@oAmAWYa@[w@{@o@e@_@g@}@{@SWm@c@Y[g@a@}@aAi@g@U_@g@o@[IQMkBgBIWCUo@m@k@s@e@KWWQWm@g@e@k@u@o@m@]UYAQOe@SYe@KeAEg@Uc@_@SIe@[g@UMOuAw@MEGI{C_Bs@g@_@QWSWMg@[QQcAq@y@c@WWy@a@iA{@c@Qa@[]Kw@i@UG}@q@MGgAu@cAk@YWyAu@y@m@UU}BuA_@[a@c@MIYMoAmA_@k@QO[OGO_@e@{ByB}@aAOUQMc@k@YUOWk@Y]_@SOa@_@GSOQYWY]o@]o@e@s@_@aAWiBu@OA[?cC}@a@Ia@W}Ae@YMSKIOIABFHDb@JTJZF~@^d@\\hElAXNpA\\RJ^Z|Ah@jAx@dBpBXRXZPFJHPXv@r@PLJTLRxCxCr@x@lA|@t@`AVTXTd@RZRPNZ`@ZVtAv@XVdAf@tAfAVJd@^n@ZPBn@\\JBEPHJf@^\\Nj@\\f@b@b@Rj@`@VDh@`@RFbAv@l@ZXRVJpA~@RJ\\VhAn@bAd@r@d@HJdAj@jBhAp@Xr@`@P^NHVDTCR@h@HNHLPRx@JPXPPTp@^n@h@dAnAf@h@VZx@p@b@j@hBlBVRZLb@f@NX\\^p@l@xAvANH`@f@jBxATd@ZR^b@r@h@Z`@f@b@x@`Ah@^`Az@^d@FD^h@JHJBHDf@v@|BvBfA|@|@~@PNp@z@`@b@^ZRVdAp@THh@b@HJHRX^h@h@JHlArAXTh@TZDX@FTj@f@BN?PNh@p@bAFNh@XTTPf@HFZh@J^NXDT\\t@JNbApBlA`BNb@\\j@@HTTv@rA`AvA`@b@`@`AR\\VZJXt@r@LPR`@Nh@T^|@|ANRPZh@v@N^\\p@pAhBL\\HHVd@r@hBPf@B`@Lf@PbANl@N\\Pz@Pp@FZBd@Jx@Np@\\hAFd@@XNj@Hl@JZFZHNN|@Pf@DpAJh@Fv@HVJn@LABDEH@VRt@T|A`@rBDN^`CT|@Jx@ZbADf@Jj@b@nAFt@Jf@VbAPTTHNEx@m@`@SJKn@a@XKJMbAs@d@QpBaBVM`@[l@m@fB{Ab@c@RW^Uf@o@",
+    "resource_state": 3,
+    "summary_polyline": "i`pd@d}plM{@n@c@h@WPkAbAsBtAg@PyBxAYNOB[KMO}@iEYiAo@}CUmBk@eCGs@w@uCOkAOm@?W[uA_@iCg@gC[wBe@qBGs@o@}B]eC_@gBs@{BEa@Qk@yB{Dw@eAAUOKYi@[]o@oAiBsCo@mA}@oA]s@s@cA}AoCy@mAO]eEuGI[o@sAwCaEQe@IaAm@e@{Aa@i@]AOEIu@q@i@o@oBmB{BmBoDuDqDeDWY_@k@}@k@s@w@qAiAUa@gBgBa@[w@{@o@e@_@g@qAsAoBaBgBiB}@oA[IQMkBgBMm@o@m@k@s@e@K}BcCu@o@m@]UYQw@SYe@KeAEg@Uc@_@aB{@MOkBgA{C_BkDwBuAcAy@c@WWy@a@iA{@c@Qa@[]Kw@i@UG}@q@uA}@cAk@YWyAu@y@m@UU}BuAaA_Ag@WoAmA_@k@m@_@GO_@e@{ByBcCqCYUOWk@Yq@o@a@_@GSOQs@u@_BcAs@_@aAWiBu@k@AcC}@a@Ia@WwBs@SKIOIALLb@JpBr@d@\\hElAjBl@r@f@|Ah@jAx@dBpBr@n@\\PPXhA`AXh@xCxCr@x@lA|@lAvAzA|@l@p@ZVtAv@XVdAf@rCrB|B`AEPHJf@^hAl@f@b@b@Rj@`@VDh@`@RFbAv@~Az@bCbBlCtA|@p@pDtBp@Xr@`@P^NHVDTCR@h@HNHLPRx@JPXPPTp@^n@h@dCtCx@p@b@j@hBlBVRZLpA`BjCdCNH`@f@jBxATd@ZR^b@r@h@bAdAx@`AjBzAfAtA`@Rf@v@tGdGp@z@`A~@RVzAz@h@b@l@~@|C|Ch@Tt@FFTj@f@B`@Nh@x@rAh@XTTPf@d@p@`@nA\\t@nA`ClA`BNb@\\j@@HTTv@rA`AvA`@b@`@`Aj@x@JXbAdAR`@Nh@T^hCdEl@pApAhBL\\`@n@r@hBPf@B`@^jB^jAb@lBVzBNp@\\hAH~@XxAJZFZHNN|@Pf@DpAR`BHVJn@LABDEH@VRt@T|Af@bC^`CT|@Jx@ZbADf@Jj@b@nALjA`@xAPTPDNEfBmAhAm@nAaAd@QjDkCVW"
+  },
+  "trainer": false,
+  "commute": false,
+  "manual": false,
+  "private": false,
+  "visibility": "everyone",
+  "flagged": false,
+  "gear_id": "g21435351",
+  "start_latlng": [
+    6.148074,
+    -75.620949
+  ],
+  "end_latlng": [
+    6.148098,
+    -75.620956
+  ],
+  "average_speed": 3.193,
+  "max_speed": 4.26,
+  "average_cadence": 92.9,
+  "average_temp": 22,
+  "average_watts": 338.7,
+  "max_watts": 454,
+  "weighted_average_watts": 341,
+  "device_watts": true,
+  "kilojoules": 1527.9,
+  "has_heartrate": true,
+  "average_heartrate": 146.2,
+  "max_heartrate": 165,
+  "heartrate_opt_out": false,
+  "display_hide_heartrate_option": true,
+  "elev_high": 1618.6,
+  "elev_low": 1532.2,
+  "upload_id": 15768569583,
+  "upload_id_str": "15768569583",
+  "external_id": "garmin_ping_448353286969",
+  "from_accepted_tag": false,
+  "pr_count": 0,
+  "total_photo_count": 0,
+  "has_kudoed": false,
+  "suffer_score": 106,
+  "description": "Alternating paces 😍\n\nCore 4x: \n1. Run 1.8km in 09:48 (05:27 min/km)\n2. Run 1.8km in 08:54 (04:57 min/km)\n",
+  "calories": 1085,
+  "perceived_exertion": null,
+  "prefer_perceived_exertion": false,
+  "segment_efforts": [
+    {
+      "id": 3368212925975478000,
+      "resource_state": 2,
+      "name": "Inicio Las Vegas - Mayorca",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 758,
+      "moving_time": 758,
+      "start_date": "2025-06-12T10:39:19Z",
+      "start_date_local": "2025-06-12T05:39:19Z",
+      "distance": 2423.7,
+      "start_index": 186,
+      "end_index": 944,
+      "average_cadence": 91.7,
+      "device_watts": true,
+      "average_watts": 324,
+      "average_heartrate": 128.7,
+      "max_heartrate": 144,
+      "segment": {
+        "id": 14905924,
+        "resource_state": 2,
+        "name": "Inicio Las Vegas - Mayorca",
+        "activity_type": "Run",
+        "distance": 2423.7,
+        "average_grade": -1.4,
+        "maximum_grade": 13.5,
+        "elevation_high": 1602,
+        "elevation_low": 1560.1,
+        "start_latlng": [
+          6.152008,
+          -75.623959
+        ],
+        "end_latlng": [
+          6.161096,
+          -75.604648
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925974591000,
+      "resource_state": 2,
+      "name": "EURO-JUMBO",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 1950,
+      "moving_time": 1950,
+      "start_date": "2025-06-12T10:39:31Z",
+      "start_date_local": "2025-06-12T05:39:31Z",
+      "distance": 6225.8,
+      "start_index": 198,
+      "end_index": 2148,
+      "average_cadence": 92,
+      "device_watts": true,
+      "average_watts": 327.7,
+      "average_heartrate": 136.5,
+      "max_heartrate": 155,
+      "segment": {
+        "id": 30574298,
+        "resource_state": 2,
+        "name": "EURO-JUMBO",
+        "activity_type": "Run",
+        "distance": 6225.8,
+        "average_grade": -1.2,
+        "maximum_grade": 5.9,
+        "elevation_high": 1635.6,
+        "elevation_low": 1562.8,
+        "start_latlng": [
+          6.152218,
+          -75.623753
+        ],
+        "end_latlng": [
+          6.186789,
+          -75.581989
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925976863000,
+      "resource_state": 2,
+      "name": "Euro - Peldar",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 1347,
+      "moving_time": 1347,
+      "start_date": "2025-06-12T10:39:33Z",
+      "start_date_local": "2025-06-12T05:39:33Z",
+      "distance": 4308.5,
+      "start_index": 200,
+      "end_index": 1547,
+      "average_cadence": 91.4,
+      "device_watts": true,
+      "average_watts": 322.5,
+      "average_heartrate": 132.6,
+      "max_heartrate": 144,
+      "segment": {
+        "id": 19864075,
+        "resource_state": 2,
+        "name": "Euro - Peldar",
+        "activity_type": "Run",
+        "distance": 4308.5,
+        "average_grade": -1.2,
+        "maximum_grade": 7.1,
+        "elevation_high": 1624.4,
+        "elevation_low": 1568.2,
+        "start_latlng": [
+          6.152228,
+          -75.62369
+        ],
+        "end_latlng": [
+          6.173162,
+          -75.592853
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925975169500,
+      "resource_state": 2,
+      "name": "Del Euro a Mayorca Bajando",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 680,
+      "moving_time": 680,
+      "start_date": "2025-06-12T10:39:50Z",
+      "start_date_local": "2025-06-12T05:39:50Z",
+      "distance": 2166,
+      "start_index": 217,
+      "end_index": 897,
+      "average_cadence": 91.7,
+      "device_watts": true,
+      "average_watts": 322.4,
+      "average_heartrate": 128,
+      "max_heartrate": 144,
+      "segment": {
+        "id": 18191894,
+        "resource_state": 2,
+        "name": "Del Euro a Mayorca Bajando",
+        "activity_type": "Run",
+        "distance": 2166,
+        "average_grade": -1.3,
+        "maximum_grade": 4.8,
+        "elevation_high": 1599.3,
+        "elevation_low": 1560.1,
+        "start_latlng": [
+          6.152336,
+          -75.623221
+        ],
+        "end_latlng": [
+          6.160177,
+          -75.605699
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925976214000,
+      "resource_state": 2,
+      "name": "Ciclovia Cll 75 - 61 Sur",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 382,
+      "moving_time": 382,
+      "start_date": "2025-06-12T10:41:02Z",
+      "start_date_local": "2025-06-12T05:41:02Z",
+      "distance": 1237.9,
+      "start_index": 289,
+      "end_index": 671,
+      "average_cadence": 91.4,
+      "device_watts": true,
+      "average_watts": 313,
+      "average_heartrate": 123.8,
+      "max_heartrate": 136,
+      "segment": {
+        "id": 13963028,
+        "resource_state": 2,
+        "name": "Ciclovia Cll 75 - 61 Sur",
+        "activity_type": "Run",
+        "distance": 1237.9,
+        "average_grade": -1.5,
+        "maximum_grade": 4.2,
+        "elevation_high": 1592,
+        "elevation_low": 1573.8,
+        "start_latlng": [
+          6.152882,
+          -75.621323
+        ],
+        "end_latlng": [
+          6.156364,
+          -75.611329
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925977087500,
+      "resource_state": 2,
+      "name": "Calle Larga - Cuadra antes de Mayorca",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 539,
+      "moving_time": 539,
+      "start_date": "2025-06-12T10:41:06Z",
+      "start_date_local": "2025-06-12T05:41:06Z",
+      "distance": 1791.2,
+      "start_index": 293,
+      "end_index": 832,
+      "average_cadence": 91.8,
+      "device_watts": true,
+      "average_watts": 323.7,
+      "average_heartrate": 127.4,
+      "max_heartrate": 143,
+      "segment": {
+        "id": 29627468,
+        "resource_state": 2,
+        "name": "Calle Larga - Cuadra antes de Mayorca",
+        "activity_type": "Run",
+        "distance": 1791.2,
+        "average_grade": -1.2,
+        "maximum_grade": 1.7,
+        "elevation_high": 1593.1,
+        "elevation_low": 1570.7,
+        "start_latlng": [
+          6.152898,
+          -75.621213
+        ],
+        "end_latlng": [
+          6.159206,
+          -75.607486
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Itagüi",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925973202400,
+      "resource_state": 2,
+      "name": "Ciclovia S-N",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 612,
+      "moving_time": 612,
+      "start_date": "2025-06-12T10:42:00Z",
+      "start_date_local": "2025-06-12T05:42:00Z",
+      "distance": 1962,
+      "start_index": 347,
+      "end_index": 959,
+      "average_cadence": 92,
+      "device_watts": true,
+      "average_watts": 328.1,
+      "average_heartrate": 130.5,
+      "max_heartrate": 144,
+      "segment": {
+        "id": 36779073,
+        "resource_state": 2,
+        "name": "Ciclovia S-N",
+        "activity_type": "Run",
+        "distance": 1962,
+        "average_grade": -1.3,
+        "maximum_grade": 0.7,
+        "elevation_high": 1593.1,
+        "elevation_low": 1566.7,
+        "start_latlng": [
+          6.153366,
+          -75.619797
+        ],
+        "end_latlng": [
+          6.16134,
+          -75.604275
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": null,
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925973006000,
+      "resource_state": 2,
+      "name": "Av Las Vegas Cll 61 Sur - Mayorca",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 302,
+      "moving_time": 302,
+      "start_date": "2025-06-12T10:47:31Z",
+      "start_date_local": "2025-06-12T05:47:31Z",
+      "distance": 1128.9,
+      "start_index": 678,
+      "end_index": 980,
+      "average_cadence": 92.6,
+      "device_watts": true,
+      "average_watts": 346.7,
+      "average_heartrate": 137.9,
+      "max_heartrate": 144,
+      "segment": {
+        "id": 13960906,
+        "resource_state": 2,
+        "name": "Av Las Vegas Cll 61 Sur - Mayorca",
+        "activity_type": "Run",
+        "distance": 1128.9,
+        "average_grade": -0.5,
+        "maximum_grade": 23.6,
+        "elevation_high": 1573.4,
+        "elevation_low": 1560.1,
+        "start_latlng": [
+          6.156434,
+          -75.611214
+        ],
+        "end_latlng": [
+          6.161451,
+          -75.603588
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925973396000,
+      "resource_state": 2,
+      "name": "Tto Envigado - Peldar",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 454,
+      "moving_time": 454,
+      "start_date": "2025-06-12T10:53:40Z",
+      "start_date_local": "2025-06-12T05:53:40Z",
+      "distance": 1428.4,
+      "start_index": 1047,
+      "end_index": 1501,
+      "average_cadence": 90.5,
+      "device_watts": true,
+      "average_watts": 315.3,
+      "average_heartrate": 137.4,
+      "max_heartrate": 143,
+      "segment": {
+        "id": 14905950,
+        "resource_state": 2,
+        "name": "Tto Envigado - Peldar",
+        "activity_type": "Run",
+        "distance": 1428.4,
+        "average_grade": -1.1,
+        "maximum_grade": 44.9,
+        "elevation_high": 1558,
+        "elevation_low": 1538,
+        "start_latlng": [
+          6.162982,
+          -75.602398
+        ],
+        "end_latlng": [
+          6.172031,
+          -75.593499
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925974762000,
+      "resource_state": 2,
+      "name": "Transito-McDonalds",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 740,
+      "moving_time": 740,
+      "start_date": "2025-06-12T10:54:11Z",
+      "start_date_local": "2025-06-12T05:54:11Z",
+      "distance": 2288.6,
+      "start_index": 1078,
+      "end_index": 1818,
+      "average_cadence": 91.6,
+      "device_watts": true,
+      "average_watts": 318.5,
+      "average_heartrate": 137.8,
+      "max_heartrate": 148,
+      "segment": {
+        "id": 15855000,
+        "resource_state": 2,
+        "name": "Transito-McDonalds",
+        "activity_type": "Run",
+        "distance": 2288.6,
+        "average_grade": -1.2,
+        "maximum_grade": 5.2,
+        "elevation_high": 1586.4,
+        "elevation_low": 1559,
+        "start_latlng": [
+          6.163711,
+          -75.601875
+        ],
+        "end_latlng": [
+          6.179289,
+          -75.588423
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925974100500,
+      "resource_state": 2,
+      "name": "Av Las Vegas Polideportivo - Exito",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 370,
+      "moving_time": 370,
+      "start_date": "2025-06-12T10:54:15Z",
+      "start_date_local": "2025-06-12T05:54:15Z",
+      "distance": 1177.2,
+      "start_index": 1082,
+      "end_index": 1452,
+      "average_cadence": 90.5,
+      "device_watts": true,
+      "average_watts": 315.1,
+      "average_heartrate": 136.9,
+      "max_heartrate": 143,
+      "segment": {
+        "id": 13888698,
+        "resource_state": 2,
+        "name": "Av Las Vegas Polideportivo - Exito",
+        "activity_type": "Run",
+        "distance": 1177.2,
+        "average_grade": -1.2,
+        "maximum_grade": 9.9,
+        "elevation_high": 1557.6,
+        "elevation_low": 1538.1,
+        "start_latlng": [
+          6.163765,
+          -75.601686
+        ],
+        "end_latlng": [
+          6.171052,
+          -75.594441
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925973817000,
+      "resource_state": 2,
+      "name": "Polideportivo-Glorieta",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 400,
+      "moving_time": 400,
+      "start_date": "2025-06-12T10:55:30Z",
+      "start_date_local": "2025-06-12T05:55:30Z",
+      "distance": 1237.1,
+      "start_index": 1157,
+      "end_index": 1557,
+      "average_cadence": 90.8,
+      "device_watts": true,
+      "average_watts": 313.2,
+      "average_heartrate": 136.4,
+      "max_heartrate": 143,
+      "segment": {
+        "id": 21396180,
+        "resource_state": 2,
+        "name": "Polideportivo-Glorieta",
+        "activity_type": "Run",
+        "distance": 1237.1,
+        "average_grade": -1,
+        "maximum_grade": 4.4,
+        "elevation_high": 1552.5,
+        "elevation_low": 1538.6,
+        "start_latlng": [
+          6.165323,
+          -75.600186
+        ],
+        "end_latlng": [
+          6.173391,
+          -75.592518
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925975583000,
+      "resource_state": 2,
+      "name": "Polideportivo-McDonalds",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 615,
+      "moving_time": 615,
+      "start_date": "2025-06-12T10:56:16Z",
+      "start_date_local": "2025-06-12T05:56:16Z",
+      "distance": 1892.1,
+      "start_index": 1203,
+      "end_index": 1818,
+      "average_cadence": 91.9,
+      "device_watts": true,
+      "average_watts": 319.7,
+      "average_heartrate": 137.7,
+      "max_heartrate": 148,
+      "segment": {
+        "id": 15854999,
+        "resource_state": 2,
+        "name": "Polideportivo-McDonalds",
+        "activity_type": "Run",
+        "distance": 1892.1,
+        "average_grade": -1.1,
+        "maximum_grade": 5.2,
+        "elevation_high": 1579.8,
+        "elevation_low": 1559,
+        "start_latlng": [
+          6.166279,
+          -75.599386
+        ],
+        "end_latlng": [
+          6.179289,
+          -75.588423
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925973053000,
+      "resource_state": 2,
+      "name": "2.5KM",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 760,
+      "moving_time": 760,
+      "start_date": "2025-06-12T10:56:32Z",
+      "start_date_local": "2025-06-12T05:56:32Z",
+      "distance": 2454.7,
+      "start_index": 1219,
+      "end_index": 1979,
+      "average_cadence": 92.5,
+      "device_watts": true,
+      "average_watts": 326.2,
+      "average_heartrate": 140.1,
+      "max_heartrate": 152,
+      "segment": {
+        "id": 28860921,
+        "resource_state": 2,
+        "name": "2.5KM",
+        "activity_type": "Run",
+        "distance": 2454.7,
+        "average_grade": -1,
+        "maximum_grade": 0,
+        "elevation_high": 1551.6,
+        "elevation_low": 1528.1,
+        "start_latlng": [
+          6.166522,
+          -75.598941
+        ],
+        "end_latlng": [
+          6.183197,
+          -75.585453
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925976287700,
+      "resource_state": 2,
+      "name": "Exito - Jumbo",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 546,
+      "moving_time": 546,
+      "start_date": "2025-06-12T11:02:49Z",
+      "start_date_local": "2025-06-12T06:02:49Z",
+      "distance": 1804.3,
+      "start_index": 1596,
+      "end_index": 2142,
+      "average_cadence": 93.3,
+      "device_watts": true,
+      "average_watts": 341.3,
+      "average_heartrate": 146,
+      "max_heartrate": 155,
+      "segment": {
+        "id": 19009660,
+        "resource_state": 2,
+        "name": "Exito - Jumbo",
+        "activity_type": "Run",
+        "distance": 1804.3,
+        "average_grade": -0.7,
+        "maximum_grade": 15,
+        "elevation_high": 1561.4,
+        "elevation_low": 1547.4,
+        "start_latlng": [
+          6.174366,
+          -75.592311
+        ],
+        "end_latlng": [
+          6.18671,
+          -75.582206
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925973991000,
+      "resource_state": 2,
+      "name": "Mercovil - McDonalds",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 461,
+      "moving_time": 461,
+      "start_date": "2025-06-12T11:13:49Z",
+      "start_date_local": "2025-06-12T06:13:49Z",
+      "distance": 1474.9,
+      "start_index": 2256,
+      "end_index": 2717,
+      "average_cadence": 92.4,
+      "device_watts": true,
+      "average_watts": 330.4,
+      "average_heartrate": 150.8,
+      "max_heartrate": 156,
+      "segment": {
+        "id": 9907868,
+        "resource_state": 2,
+        "name": "Mercovil - McDonalds",
+        "activity_type": "Run",
+        "distance": 1474.9,
+        "average_grade": 0.8,
+        "maximum_grade": 7.2,
+        "elevation_high": 1532.1,
+        "elevation_low": 1519.2,
+        "start_latlng": [
+          6.189879,
+          -75.580387
+        ],
+        "end_latlng": [
+          6.179551,
+          -75.58794
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Medellín",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925975710000,
+      "resource_state": 2,
+      "name": "Mercovil-Ayura (Av Vegas)",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 168,
+      "moving_time": 168,
+      "start_date": "2025-06-12T11:13:53Z",
+      "start_date_local": "2025-06-12T06:13:53Z",
+      "distance": 522.8,
+      "start_index": 2260,
+      "end_index": 2428,
+      "average_cadence": 93,
+      "device_watts": true,
+      "average_watts": 341.2,
+      "average_heartrate": 151.9,
+      "max_heartrate": 156,
+      "segment": {
+        "id": 16642483,
+        "resource_state": 2,
+        "name": "Mercovil-Ayura (Av Vegas)",
+        "activity_type": "Run",
+        "distance": 522.8,
+        "average_grade": 1,
+        "maximum_grade": 16.5,
+        "elevation_high": 1525,
+        "elevation_low": 1518.8,
+        "start_latlng": [
+          6.189566,
+          -75.58056
+        ],
+        "end_latlng": [
+          6.185498,
+          -75.582731
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925977094700,
+      "resource_state": 2,
+      "name": "Jumbo - Euro Sabaneta",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 2049,
+      "moving_time": 2005,
+      "start_date": "2025-06-12T11:15:05Z",
+      "start_date_local": "2025-06-12T06:15:05Z",
+      "distance": 6517,
+      "start_index": 2332,
+      "end_index": 4340,
+      "average_cadence": 90.1,
+      "device_watts": true,
+      "average_watts": 350.1,
+      "average_heartrate": 157,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 19864063,
+        "resource_state": 2,
+        "name": "Jumbo - Euro Sabaneta",
+        "activity_type": "Run",
+        "distance": 6517,
+        "average_grade": 1.1,
+        "maximum_grade": 16.7,
+        "elevation_high": 1622,
+        "elevation_low": 1540.6,
+        "start_latlng": [
+          6.187854,
+          -75.581593
+        ],
+        "end_latlng": [
+          6.152151,
+          -75.623816
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": null,
+        "state": null,
+        "country": null,
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925975969300,
+      "resource_state": 2,
+      "name": "Jumbo - Exito",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 602,
+      "moving_time": 602,
+      "start_date": "2025-06-12T11:15:23Z",
+      "start_date_local": "2025-06-12T06:15:23Z",
+      "distance": 1874.7,
+      "start_index": 2350,
+      "end_index": 2952,
+      "average_cadence": 92.6,
+      "device_watts": true,
+      "average_watts": 337.9,
+      "average_heartrate": 152.2,
+      "max_heartrate": 160,
+      "segment": {
+        "id": 9643649,
+        "resource_state": 2,
+        "name": "Jumbo - Exito",
+        "activity_type": "Run",
+        "distance": 1874.7,
+        "average_grade": 0.9,
+        "maximum_grade": 6.9,
+        "elevation_high": 1539.2,
+        "elevation_low": 1521.8,
+        "start_latlng": [
+          6.187351,
+          -75.581671
+        ],
+        "end_latlng": [
+          6.174352,
+          -75.592046
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925976201700,
+      "resource_state": 2,
+      "name": "Ayurá - Éxito",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 508,
+      "moving_time": 508,
+      "start_date": "2025-06-12T11:17:04Z",
+      "start_date_local": "2025-06-12T06:17:04Z",
+      "distance": 1578.5,
+      "start_index": 2451,
+      "end_index": 2959,
+      "average_cadence": 92.5,
+      "device_watts": true,
+      "average_watts": 338,
+      "average_heartrate": 152.1,
+      "max_heartrate": 160,
+      "segment": {
+        "id": 37441441,
+        "resource_state": 2,
+        "name": "Ayurá - Éxito",
+        "activity_type": "Run",
+        "distance": 1578.5,
+        "average_grade": 0.4,
+        "maximum_grade": 10,
+        "elevation_high": 1560,
+        "elevation_low": 1551,
+        "start_latlng": [
+          6.185098,
+          -75.583225
+        ],
+        "end_latlng": [
+          6.174024,
+          -75.591866
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": null,
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925975846400,
+      "resource_state": 2,
+      "name": "Complex Av Vegas - Polideportivo",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 758,
+      "moving_time": 758,
+      "start_date": "2025-06-12T11:19:13Z",
+      "start_date_local": "2025-06-12T06:19:13Z",
+      "distance": 2449.9,
+      "start_index": 2580,
+      "end_index": 3338,
+      "average_cadence": 94,
+      "device_watts": true,
+      "average_watts": 358.8,
+      "average_heartrate": 157.1,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 24917614,
+        "resource_state": 2,
+        "name": "Complex Av Vegas - Polideportivo",
+        "activity_type": "Run",
+        "distance": 2449.9,
+        "average_grade": 0.8,
+        "maximum_grade": 4,
+        "elevation_high": 1579.8,
+        "elevation_low": 1558.6,
+        "start_latlng": [
+          6.182626,
+          -75.585767
+        ],
+        "end_latlng": [
+          6.165789,
+          -75.5997
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925976295000,
+      "resource_state": 2,
+      "name": "CALLE TERRAZAS A FINAL DE VIVA (@daniellopezg18)",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 232,
+      "moving_time": 232,
+      "start_date": "2025-06-12T11:21:36Z",
+      "start_date_local": "2025-06-12T06:21:36Z",
+      "distance": 749,
+      "start_index": 2723,
+      "end_index": 2955,
+      "average_cadence": 93.2,
+      "device_watts": true,
+      "average_watts": 354.2,
+      "average_heartrate": 154.3,
+      "max_heartrate": 160,
+      "segment": {
+        "id": 38297532,
+        "resource_state": 2,
+        "name": "CALLE TERRAZAS A FINAL DE VIVA (@daniellopezg18)",
+        "activity_type": "Run",
+        "distance": 749,
+        "average_grade": 1.2,
+        "maximum_grade": 5.2,
+        "elevation_high": 1540.9,
+        "elevation_low": 1531.6,
+        "start_latlng": [
+          6.17992,
+          -75.588312
+        ],
+        "end_latlng": [
+          6.174513,
+          -75.592133
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": null,
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925974013400,
+      "resource_state": 2,
+      "name": "McDonalds a Polideportivo Envigado",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 573,
+      "moving_time": 573,
+      "start_date": "2025-06-12T11:21:45Z",
+      "start_date_local": "2025-06-12T06:21:45Z",
+      "distance": 1918.2,
+      "start_index": 2732,
+      "end_index": 3305,
+      "average_cadence": 94.5,
+      "device_watts": true,
+      "average_watts": 366.7,
+      "average_heartrate": 158.5,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 16581000,
+        "resource_state": 2,
+        "name": "McDonalds a Polideportivo Envigado",
+        "activity_type": "Run",
+        "distance": 1918.2,
+        "average_grade": 1,
+        "maximum_grade": 29.6,
+        "elevation_high": 1551,
+        "elevation_low": 1531.7,
+        "start_latlng": [
+          6.179337,
+          -75.588248
+        ],
+        "end_latlng": [
+          6.166623,
+          -75.599211
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925975860700,
+      "resource_state": 2,
+      "name": "Exito - Transito Envigado",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 485,
+      "moving_time": 485,
+      "start_date": "2025-06-12T11:25:59Z",
+      "start_date_local": "2025-06-12T06:25:59Z",
+      "distance": 1631.1,
+      "start_index": 2986,
+      "end_index": 3471,
+      "average_cadence": 94.4,
+      "device_watts": true,
+      "average_watts": 369.8,
+      "average_heartrate": 161.3,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 11644751,
+        "resource_state": 2,
+        "name": "Exito - Transito Envigado",
+        "activity_type": "Run",
+        "distance": 1631.1,
+        "average_grade": 1.3,
+        "maximum_grade": 10.6,
+        "elevation_high": 1557.5,
+        "elevation_low": 1536.6,
+        "start_latlng": [
+          6.173257,
+          -75.592148
+        ],
+        "end_latlng": [
+          6.163142,
+          -75.602282
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925976203000,
+      "resource_state": 2,
+      "name": "Glorieta-Polideportivo",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 360,
+      "moving_time": 360,
+      "start_date": "2025-06-12T11:26:12Z",
+      "start_date_local": "2025-06-12T06:26:12Z",
+      "distance": 1223.5,
+      "start_index": 2999,
+      "end_index": 3359,
+      "average_cadence": 94.9,
+      "device_watts": true,
+      "average_watts": 372.4,
+      "average_heartrate": 161.4,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 21396182,
+        "resource_state": 2,
+        "name": "Glorieta-Polideportivo",
+        "activity_type": "Run",
+        "distance": 1223.5,
+        "average_grade": 1,
+        "maximum_grade": 6.9,
+        "elevation_high": 1552.6,
+        "elevation_low": 1538.6,
+        "start_latlng": [
+          6.173313,
+          -75.592556
+        ],
+        "end_latlng": [
+          6.165373,
+          -75.600212
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925975193000,
+      "resource_state": 2,
+      "name": "Peldar - Tto envigado",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 487,
+      "moving_time": 487,
+      "start_date": "2025-06-12T11:26:24Z",
+      "start_date_local": "2025-06-12T06:26:24Z",
+      "distance": 1602.6,
+      "start_index": 3011,
+      "end_index": 3498,
+      "average_cadence": 94.3,
+      "device_watts": true,
+      "average_watts": 368.6,
+      "average_heartrate": 161.2,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 9643659,
+        "resource_state": 2,
+        "name": "Peldar - Tto envigado",
+        "activity_type": "Run",
+        "distance": 1602.6,
+        "average_grade": 1.2,
+        "maximum_grade": 9.2,
+        "elevation_high": 1559.6,
+        "elevation_low": 1538,
+        "start_latlng": [
+          6.173072,
+          -75.592933
+        ],
+        "end_latlng": [
+          6.162821,
+          -75.602923
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925977172500,
+      "resource_state": 2,
+      "name": "Av Las Vegas Éxito - Polideportivo",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 383,
+      "moving_time": 383,
+      "start_date": "2025-06-12T11:27:47Z",
+      "start_date_local": "2025-06-12T06:27:47Z",
+      "distance": 1270.8,
+      "start_index": 3094,
+      "end_index": 3477,
+      "average_cadence": 94.1,
+      "device_watts": true,
+      "average_watts": 366.1,
+      "average_heartrate": 161.2,
+      "max_heartrate": 164,
+      "segment": {
+        "id": 13963042,
+        "resource_state": 2,
+        "name": "Av Las Vegas Éxito - Polideportivo",
+        "activity_type": "Run",
+        "distance": 1270.8,
+        "average_grade": 1.1,
+        "maximum_grade": 28.9,
+        "elevation_high": 1558,
+        "elevation_low": 1538.1,
+        "start_latlng": [
+          6.171025,
+          -75.59454
+        ],
+        "end_latlng": [
+          6.163082,
+          -75.602436
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Envigado",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": true
+    },
+    {
+      "id": 3368212925974609400,
+      "resource_state": 2,
+      "name": "Ciclovia N-S",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 660,
+      "moving_time": 626,
+      "start_date": "2025-06-12T11:35:48Z",
+      "start_date_local": "2025-06-12T06:35:48Z",
+      "distance": 1964,
+      "start_index": 3575,
+      "end_index": 4203,
+      "average_cadence": 85.3,
+      "device_watts": true,
+      "average_watts": 340.9,
+      "average_heartrate": 156.9,
+      "max_heartrate": 163,
+      "segment": {
+        "id": 36779061,
+        "resource_state": 2,
+        "name": "Ciclovia N-S",
+        "activity_type": "Run",
+        "distance": 1964,
+        "average_grade": 1.3,
+        "maximum_grade": 2.5,
+        "elevation_high": 1593.1,
+        "elevation_low": 1566.7,
+        "start_latlng": [
+          6.161375,
+          -75.604282
+        ],
+        "end_latlng": [
+          6.153383,
+          -75.619788
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": null,
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    },
+    {
+      "id": 3368212925973513700,
+      "resource_state": 2,
+      "name": "Ciclovia Cll 61 - 75 Sur",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 360,
+      "moving_time": 360,
+      "start_date": "2025-06-12T11:41:40Z",
+      "start_date_local": "2025-06-12T06:41:40Z",
+      "distance": 1205.7,
+      "start_index": 3895,
+      "end_index": 4255,
+      "average_cadence": 88.7,
+      "device_watts": true,
+      "average_watts": 350.9,
+      "average_heartrate": 158.2,
+      "max_heartrate": 163,
+      "segment": {
+        "id": 13960924,
+        "resource_state": 2,
+        "name": "Ciclovia Cll 61 - 75 Sur",
+        "activity_type": "Run",
+        "distance": 1205.7,
+        "average_grade": 1.5,
+        "maximum_grade": 7.5,
+        "elevation_high": 1591.9,
+        "elevation_low": 1573.7,
+        "start_latlng": [
+          6.156438,
+          -75.611337
+        ],
+        "end_latlng": [
+          6.152882,
+          -75.621323
+        ],
+        "elevation_profile": null,
+        "elevation_profiles": null,
+        "climb_category": 0,
+        "city": "Sabaneta",
+        "state": "Antioquia",
+        "country": "Colombia",
+        "private": false,
+        "hazardous": false,
+        "starred": false
+      },
+      "pr_rank": null,
+      "achievements": [],
+      "visibility": "everyone",
+      "kom_rank": null,
+      "hidden": false
+    }
+  ],
+  "splits_metric": [
+    {
+      "distance": 1000.1,
+      "elapsed_time": 328,
+      "elevation_difference": -9.4,
+      "moving_time": 328,
+      "split": 1,
+      "average_speed": 3.05,
+      "average_grade_adjusted_speed": 3.01,
+      "average_heartrate": 116.60060975609755,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1002.1,
+      "elapsed_time": 324,
+      "elevation_difference": -11.6,
+      "moving_time": 324,
+      "split": 2,
+      "average_speed": 3.09,
+      "average_grade_adjusted_speed": 3.03,
+      "average_heartrate": 123.32407407407408,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1000.8,
+      "elapsed_time": 299,
+      "elevation_difference": -11,
+      "moving_time": 299,
+      "split": 3,
+      "average_speed": 3.35,
+      "average_grade_adjusted_speed": 3.28,
+      "average_heartrate": 137.41471571906354,
+      "pace_zone": 2
+    },
+    {
+      "distance": 997,
+      "elapsed_time": 310,
+      "elevation_difference": -16.2,
+      "moving_time": 310,
+      "split": 4,
+      "average_speed": 3.22,
+      "average_grade_adjusted_speed": 3.12,
+      "average_heartrate": 137.76129032258063,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1000.8,
+      "elapsed_time": 324,
+      "elevation_difference": -9.6,
+      "moving_time": 324,
+      "split": 5,
+      "average_speed": 3.09,
+      "average_grade_adjusted_speed": 3.04,
+      "average_heartrate": 137.09259259259258,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1002.5,
+      "elapsed_time": 311,
+      "elevation_difference": -11.8,
+      "moving_time": 311,
+      "split": 6,
+      "average_speed": 3.22,
+      "average_grade_adjusted_speed": 3.15,
+      "average_heartrate": 141.7266881028939,
+      "pace_zone": 2
+    },
+    {
+      "distance": 998.7,
+      "elapsed_time": 297,
+      "elevation_difference": -5.4,
+      "moving_time": 297,
+      "split": 7,
+      "average_speed": 3.36,
+      "average_grade_adjusted_speed": 3.34,
+      "average_heartrate": 150.92592592592592,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1001.3,
+      "elapsed_time": 322,
+      "elevation_difference": 3.8,
+      "moving_time": 322,
+      "split": 8,
+      "average_speed": 3.11,
+      "average_grade_adjusted_speed": 3.15,
+      "average_heartrate": 150.9751552795031,
+      "pace_zone": 2
+    },
+    {
+      "distance": 997,
+      "elapsed_time": 328,
+      "elevation_difference": 6.4,
+      "moving_time": 328,
+      "split": 9,
+      "average_speed": 3.04,
+      "average_grade_adjusted_speed": 3.1,
+      "average_heartrate": 150.28353658536585,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1001.3,
+      "elapsed_time": 298,
+      "elevation_difference": 13.2,
+      "moving_time": 298,
+      "split": 10,
+      "average_speed": 3.36,
+      "average_grade_adjusted_speed": 3.49,
+      "average_heartrate": 159.6476510067114,
+      "pace_zone": 3
+    },
+    {
+      "distance": 999.4,
+      "elapsed_time": 305,
+      "elevation_difference": 13.2,
+      "moving_time": 305,
+      "split": 11,
+      "average_speed": 3.28,
+      "average_grade_adjusted_speed": 3.4,
+      "average_heartrate": 161.58688524590164,
+      "pace_zone": 3
+    },
+    {
+      "distance": 1000,
+      "elapsed_time": 332,
+      "elevation_difference": 12.6,
+      "moving_time": 332,
+      "split": 12,
+      "average_speed": 3.01,
+      "average_grade_adjusted_speed": 3.15,
+      "average_heartrate": 158.56626506024097,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1000.3,
+      "elapsed_time": 350,
+      "elevation_difference": 15.8,
+      "moving_time": 316,
+      "split": 13,
+      "average_speed": 3.17,
+      "average_grade_adjusted_speed": 3.31,
+      "average_heartrate": 155.28481012658227,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1001.2,
+      "elapsed_time": 307,
+      "elevation_difference": 13.4,
+      "moving_time": 297,
+      "split": 14,
+      "average_speed": 3.37,
+      "average_grade_adjusted_speed": 3.52,
+      "average_heartrate": 161.96632996632997,
+      "pace_zone": 3
+    },
+    {
+      "distance": 407.2,
+      "elapsed_time": 120,
+      "elevation_difference": 4.6,
+      "moving_time": 120,
+      "split": 15,
+      "average_speed": 3.39,
+      "average_grade_adjusted_speed": 3.53,
+      "average_heartrate": 162.1,
+      "pace_zone": 3
+    }
+  ],
+  "splits_standard": [
+    {
+      "distance": 1612.2,
+      "elapsed_time": 530,
+      "elevation_difference": -15.4,
+      "moving_time": 530,
+      "split": 1,
+      "average_speed": 3.04,
+      "average_grade_adjusted_speed": 3,
+      "average_heartrate": 119.0811320754717,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1607.5,
+      "elapsed_time": 487,
+      "elevation_difference": -18.4,
+      "moving_time": 487,
+      "split": 2,
+      "average_speed": 3.3,
+      "average_grade_adjusted_speed": 3.24,
+      "average_heartrate": 134.04312114989733,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1609.5,
+      "elapsed_time": 514,
+      "elevation_difference": -21.8,
+      "moving_time": 514,
+      "split": 3,
+      "average_speed": 3.13,
+      "average_grade_adjusted_speed": 3.05,
+      "average_heartrate": 137.42217898832683,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1610.6,
+      "elapsed_time": 496,
+      "elevation_difference": -15.8,
+      "moving_time": 496,
+      "split": 4,
+      "average_speed": 3.25,
+      "average_grade_adjusted_speed": 3.19,
+      "average_heartrate": 143.1491935483871,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1607.2,
+      "elapsed_time": 503,
+      "elevation_difference": 0,
+      "moving_time": 503,
+      "split": 5,
+      "average_speed": 3.2,
+      "average_grade_adjusted_speed": 3.21,
+      "average_heartrate": 151.4214711729622,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1610.3,
+      "elapsed_time": 509,
+      "elevation_difference": 16.8,
+      "moving_time": 509,
+      "split": 6,
+      "average_speed": 3.16,
+      "average_grade_adjusted_speed": 3.26,
+      "average_heartrate": 153.59135559921415,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1610.6,
+      "elapsed_time": 497,
+      "elevation_difference": 23.8,
+      "moving_time": 497,
+      "split": 7,
+      "average_speed": 3.24,
+      "average_grade_adjusted_speed": 3.38,
+      "average_heartrate": 161.02213279678068,
+      "pace_zone": 3
+    },
+    {
+      "distance": 1608.1,
+      "elapsed_time": 554,
+      "elevation_difference": 19.2,
+      "moving_time": 520,
+      "split": 8,
+      "average_speed": 3.09,
+      "average_grade_adjusted_speed": 3.22,
+      "average_heartrate": 156.22115384615384,
+      "pace_zone": 2
+    },
+    {
+      "distance": 1533.7,
+      "elapsed_time": 465,
+      "elevation_difference": 19.6,
+      "moving_time": 455,
+      "split": 9,
+      "average_speed": 3.37,
+      "average_grade_adjusted_speed": 3.51,
+      "average_heartrate": 162.01318681318682,
+      "pace_zone": 3
+    }
+  ],
+  "laps": [
+    {
+      "id": 52545545628,
+      "resource_state": 2,
+      "name": "Lap 1",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 591,
+      "moving_time": 591,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 1800,
+      "average_speed": 3.05,
+      "max_speed": 3.56,
+      "lap_index": 1,
+      "split": 1,
+      "start_index": 0,
+      "end_index": 529,
+      "total_elevation_gain": 3.8,
+      "average_cadence": 90.8,
+      "device_watts": true,
+      "average_watts": 309.3,
+      "average_heartrate": 119.1,
+      "max_heartrate": 131,
+      "pace_zone": 2
+    },
+    {
+      "id": 52545545643,
+      "resource_state": 2,
+      "name": "Lap 2",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 538,
+      "moving_time": 538,
+      "start_date": "2025-06-12T10:46:06Z",
+      "start_date_local": "2025-06-12T05:46:06Z",
+      "distance": 1800,
+      "average_speed": 3.35,
+      "max_speed": 4.04,
+      "lap_index": 2,
+      "split": 2,
+      "start_index": 530,
+      "end_index": 1068,
+      "total_elevation_gain": 0,
+      "average_cadence": 92.7,
+      "device_watts": true,
+      "average_watts": 340,
+      "average_heartrate": 137.2,
+      "max_heartrate": 144,
+      "pace_zone": 3
+    },
+    {
+      "id": 52545545657,
+      "resource_state": 2,
+      "name": "Lap 3",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 587,
+      "moving_time": 587,
+      "start_date": "2025-06-12T10:55:05Z",
+      "start_date_local": "2025-06-12T05:55:05Z",
+      "distance": 1800,
+      "average_speed": 3.07,
+      "max_speed": 4.04,
+      "lap_index": 3,
+      "split": 3,
+      "start_index": 1069,
+      "end_index": 1656,
+      "total_elevation_gain": 0,
+      "average_cadence": 91.1,
+      "device_watts": true,
+      "average_watts": 313.2,
+      "average_heartrate": 136.8,
+      "max_heartrate": 143,
+      "pace_zone": 2
+    },
+    {
+      "id": 52545545670,
+      "resource_state": 2,
+      "name": "Lap 4",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 535,
+      "moving_time": 535,
+      "start_date": "2025-06-12T11:04:53Z",
+      "start_date_local": "2025-06-12T06:04:53Z",
+      "distance": 1800,
+      "average_speed": 3.36,
+      "max_speed": 4.26,
+      "lap_index": 4,
+      "split": 4,
+      "start_index": 1657,
+      "end_index": 2191,
+      "total_elevation_gain": 0,
+      "average_cadence": 93.8,
+      "device_watts": true,
+      "average_watts": 343.3,
+      "average_heartrate": 148.6,
+      "max_heartrate": 155,
+      "pace_zone": 3
+    },
+    {
+      "id": 52545545686,
+      "resource_state": 2,
+      "name": "Lap 5",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 589,
+      "moving_time": 589,
+      "start_date": "2025-06-12T11:13:48Z",
+      "start_date_local": "2025-06-12T06:13:48Z",
+      "distance": 1800,
+      "average_speed": 3.06,
+      "max_speed": 3.84,
+      "lap_index": 5,
+      "split": 5,
+      "start_index": 2192,
+      "end_index": 2781,
+      "total_elevation_gain": 13.6,
+      "average_cadence": 92.6,
+      "device_watts": true,
+      "average_watts": 330.1,
+      "average_heartrate": 150.9,
+      "max_heartrate": 156,
+      "pace_zone": 2
+    },
+    {
+      "id": 52545545701,
+      "resource_state": 2,
+      "name": "Lap 6",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 534,
+      "moving_time": 534,
+      "start_date": "2025-06-12T11:23:38Z",
+      "start_date_local": "2025-06-12T06:23:38Z",
+      "distance": 1800,
+      "average_speed": 3.37,
+      "max_speed": 4.18,
+      "lap_index": 6,
+      "split": 6,
+      "start_index": 2782,
+      "end_index": 3316,
+      "total_elevation_gain": 22.6,
+      "average_cadence": 95.2,
+      "device_watts": true,
+      "average_watts": 375.5,
+      "average_heartrate": 160.6,
+      "max_heartrate": 164,
+      "pace_zone": 3
+    },
+    {
+      "id": 52545545719,
+      "resource_state": 2,
+      "name": "Lap 7",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 632,
+      "moving_time": 598,
+      "start_date": "2025-06-12T11:32:33Z",
+      "start_date_local": "2025-06-12T06:32:33Z",
+      "distance": 1800,
+      "average_speed": 3.01,
+      "max_speed": 3.82,
+      "lap_index": 7,
+      "split": 7,
+      "start_index": 3317,
+      "end_index": 3916,
+      "total_elevation_gain": 27.8,
+      "average_cadence": 92.2,
+      "device_watts": true,
+      "average_watts": 328.8,
+      "average_heartrate": 156.7,
+      "max_heartrate": 164,
+      "pace_zone": 2
+    },
+    {
+      "id": 52545545732,
+      "resource_state": 2,
+      "name": "Lap 8",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 541,
+      "moving_time": 531,
+      "start_date": "2025-06-12T11:43:05Z",
+      "start_date_local": "2025-06-12T06:43:05Z",
+      "distance": 1800,
+      "average_speed": 3.39,
+      "max_speed": 4.02,
+      "lap_index": 8,
+      "split": 8,
+      "start_index": 3917,
+      "end_index": 4393,
+      "total_elevation_gain": 27.4,
+      "average_cadence": 95,
+      "device_watts": true,
+      "average_watts": 376.8,
+      "average_heartrate": 161.7,
+      "max_heartrate": 165,
+      "pace_zone": 3
+    },
+    {
+      "id": 52545545745,
+      "resource_state": 2,
+      "name": "Lap 9",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 3,
+      "moving_time": 3,
+      "start_date": "2025-06-12T11:52:07Z",
+      "start_date_local": "2025-06-12T06:52:07Z",
+      "distance": 9.7,
+      "average_speed": 3.23,
+      "max_speed": 3.08,
+      "lap_index": 9,
+      "split": 9,
+      "start_index": 4393,
+      "end_index": 4393,
+      "total_elevation_gain": 0.2,
+      "average_cadence": 96,
+      "device_watts": true,
+      "average_watts": 406,
+      "average_heartrate": 164,
+      "max_heartrate": 164,
+      "pace_zone": 2
+    }
+  ],
+  "best_efforts": [
+    {
+      "id": 62151348262,
+      "resource_state": 2,
+      "name": "400m",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 116,
+      "moving_time": 116,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 400,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 2959,
+      "end_index": 3075
+    },
+    {
+      "id": 62151348263,
+      "resource_state": 2,
+      "name": "1/2 mile",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 237,
+      "moving_time": 237,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 805,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 2904,
+      "end_index": 3141
+    },
+    {
+      "id": 62151348264,
+      "resource_state": 2,
+      "name": "1K",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 294,
+      "moving_time": 294,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 1000,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 2958,
+      "end_index": 3252
+    },
+    {
+      "id": 62151348258,
+      "resource_state": 2,
+      "name": "1 mile",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 475,
+      "moving_time": 475,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 1609,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 2904,
+      "end_index": 3379
+    },
+    {
+      "id": 62151348259,
+      "resource_state": 2,
+      "name": "2 mile",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 999,
+      "moving_time": 999,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 3219,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 581,
+      "end_index": 1580
+    },
+    {
+      "id": 62151348260,
+      "resource_state": 2,
+      "name": "5K",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 1540,
+      "moving_time": 1540,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 5000,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 672,
+      "end_index": 2212
+    },
+    {
+      "id": 62151348261,
+      "resource_state": 2,
+      "name": "10K",
+      "activity": {
+        "id": 14775776381,
+        "visibility": "everyone",
+        "resource_state": 1
+      },
+      "athlete": {
+        "id": 24548935,
+        "resource_state": 1
+      },
+      "elapsed_time": 3115,
+      "moving_time": 3115,
+      "start_date": "2025-06-12T10:36:13Z",
+      "start_date_local": "2025-06-12T05:36:13Z",
+      "distance": 10000,
+      "pr_rank": null,
+      "achievements": [],
+      "start_index": 262,
+      "end_index": 3377
+    }
+  ],
+  "gear": {
+    "id": "g21435351",
+    "primary": false,
+    "name": "ASICS Superblast 2 Superblast 2 Paris",
+    "nickname": "Superblast 2 Paris",
+    "resource_state": 2,
+    "retired": false,
+    "distance": 1345923,
+    "converted_distance": 1345.9
+  },
+  "photos": {
+    "primary": null,
+    "count": 0
+  },
+  "stats_visibility": [
+    {
+      "type": "heart_rate",
+      "visibility": "everyone"
+    },
+    {
+      "type": "pace",
+      "visibility": "everyone"
+    },
+    {
+      "type": "power",
+      "visibility": "everyone"
+    },
+    {
+      "type": "speed",
+      "visibility": "everyone"
+    },
+    {
+      "type": "calories",
+      "visibility": "everyone"
+    }
+  ],
+  "hide_from_home": false,
+  "embed_token": "dd3803bebb99315b0250a9aca69aa7dcbc0aad42",
+  "similar_activities": {
+    "effort_count": 28,
+    "average_speed": 2.9807367746314237,
+    "min_average_speed": 2.5056340547308174,
+    "mid_average_speed": 2.8495426566236803,
+    "max_average_speed": 3.302876001885903,
+    "pr_rank": 2,
+    "frequency_milestone": null,
+    "trend": {
+      "speeds": [
+        3.078603271168739,
+        3.0703339167752897,
+        3.097308119120287,
+        3.0304389427986598,
+        3.0841965127898883
+      ],
+      "current_activity_index": 2,
+      "min_speed": 2.5056340547308174,
+      "mid_speed": 2.8495426566236803,
+      "max_speed": 3.302876001885903,
+      "direction": 0
+    },
+    "resource_state": 2
+  },
+  "available_zones": [
+    "heartrate",
+    "pace",
+    "power"
+  ]
+}

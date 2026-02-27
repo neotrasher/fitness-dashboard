@@ -7,7 +7,9 @@ import { AIAnalysisService } from './services/aiAnalysisService';
 import { FileParserService } from './services/fileParserService';
 import { StravaService } from './services/stravaService';
 import { Activity } from './models/Activity';
+import { User } from './models/User';
 import { Goal } from './models/Goal';
+
 
 dotenv.config();
 
@@ -78,6 +80,108 @@ app.get('/api/strava/status', async (req, res) => {
   }
 });
 
+// Obtener detalles de actividades existentes sin datos detallados
+app.post('/api/strava/fetch-details', async (req, res) => {
+  try {
+    const user = await User.findOne();
+    if (!user?.stravaAccessToken) {
+      return res.status(401).json({ error: 'No conectado a Strava' });
+    }
+
+    // Refrescar token si es necesario
+    if (user.stravaTokenExpiresAt && user.stravaTokenExpiresAt < Math.floor(Date.now() / 1000)) {
+      const tokenResponse = await fetch('https://www.strava.com/oauth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          refresh_token: user.stravaRefreshToken,
+          grant_type: 'refresh_token',
+        }),
+      });
+      const tokens = await tokenResponse.json();
+      user.stravaAccessToken = tokens.access_token;
+      user.stravaRefreshToken = tokens.refresh_token;
+      user.stravaTokenExpiresAt = tokens.expires_at;
+      await user.save();
+    }
+
+    // Buscar actividades de running sin detalles
+    const activitiesWithoutDetails = await Activity.find({
+      activityCategory: 'cardio_running',
+      hasDetailedData: { $ne: true }
+    }).sort({ startTime: -1 }).limit(80);
+
+    console.log(`📥 Obteniendo detalles de ${activitiesWithoutDetails.length} actividades...`);
+
+    let updated = 0;
+    for (const activity of activitiesWithoutDetails) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 200)); // Rate limit
+
+        const response = await fetch(
+          `https://www.strava.com/api/v3/activities/${activity.stravaId}`,
+          { headers: { Authorization: `Bearer ${user.stravaAccessToken}` } }
+        );
+
+        if (response.status === 429) {
+          console.log('⚠️ Rate limit alcanzado');
+          break;
+        }
+
+        if (!response.ok) {
+          console.log(`❌ Error en actividad ${activity.stravaId}: ${response.status}`);
+          continue;
+        }
+
+        const details = await response.json();
+
+        // Clasificar workout por nombre
+        const name = (details.name || '').toLowerCase();
+        let workoutType = 'general';
+        if (/interval|series/i.test(name)) workoutType = 'intervals';
+        else if (/tempo|threshold/i.test(name)) workoutType = 'tempo';
+        else if (/lsd|long/i.test(name)) workoutType = 'long_run';
+        else if (/easy(?!.*strides)/i.test(name)) workoutType = 'easy';
+        else if (/recovery|recuper/i.test(name)) workoutType = 'recovery';
+        else if (/race|carrera|maraton/i.test(name)) workoutType = 'race';
+        else if (/fartlek/i.test(name)) workoutType = 'fartlek';
+        else if (/strides|progres/i.test(name)) workoutType = 'easy_strides';
+
+        await Activity.findByIdAndUpdate(activity._id, {
+          hasDetailedData: true,
+          workoutType,
+          description: details.description || '',
+          laps: details.laps || [],
+          splitsMetric: details.splits_metric || [],
+          bestEfforts: details.best_efforts || [],
+          gear: details.gear,
+          map: details.map ? {
+            id: details.map.id,
+            polyline: details.map.polyline,
+            summary_polyline: details.map.summary_polyline
+          } : undefined,
+          suffer_score: details.suffer_score,
+          averageCadence: details.average_cadence,
+          calories: details.calories,
+        });
+
+        updated++;
+        console.log(`✅ ${updated}/${activitiesWithoutDetails.length}: ${details.name}`);
+      } catch (err) {
+        console.error(`Error en actividad ${activity.stravaId}:`, err);
+      }
+    }
+
+    res.json({ success: true, updated, remaining: await Activity.countDocuments({ activityCategory: 'cardio_running', hasDetailedData: { $ne: true } }) });
+  } catch (error) {
+    console.error('Error fetching details:', error);
+    res.status(500).json({ error: 'Error obteniendo detalles' });
+  }
+});
+
+
 // ========== STATS CON PERÍODO ==========
 app.get('/api/stats', async (req, res) => {
   try {
@@ -95,25 +199,38 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ========== ACTIVITIES ==========
+app.get('/api/activities/:id', async (req, res) => {
+  try {
+    const activity = await Activity.findById(req.params.id);
+    if (!activity) {
+      return res.status(404).json({ error: 'Actividad no encontrada' });
+    }
+    res.json(activity);
+  } catch (error) {
+    console.error('Error getting activity:', error);
+    res.status(500).json({ error: 'Error obteniendo actividad' });
+  }
+});
+
 app.get('/api/activities', async (req, res) => {
   try {
     const { category, period, page = '1', limit = '50' } = req.query;
     const dateFilter = getDateFilter(period as string);
-    
+
     let query: any = { ...dateFilter };
     if (category && category !== 'all') {
       query.activityCategory = category;
     }
-    
+
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
     const skip = (pageNum - 1) * limitNum;
-    
+
     const [activities, total] = await Promise.all([
       Activity.find(query).sort({ startTime: -1 }).skip(skip).limit(limitNum),
       Activity.countDocuments(query)
     ]);
-    
+
     res.json({
       activities,
       pagination: {
@@ -128,6 +245,18 @@ app.get('/api/activities', async (req, res) => {
   }
 });
 
+// Obtener detalle de una actividad específica
+app.get('/api/activities/:id', async (req, res) => {
+  try {
+    const activity = await Activity.findById(req.params.id);
+    if (!activity) {
+      return res.status(404).json({ error: 'Actividad no encontrada' });
+    }
+    res.json(activity);
+  } catch (error) {
+    res.status(500).json({ error: 'Error obteniendo actividad' });
+  }
+});
 
 app.post('/api/activities/upload', upload.single('file'), async (req, res) => {
   try {
@@ -267,6 +396,140 @@ app.get('/api/fitness-status', async (req, res) => {
   } catch (error) {
     console.error('Fitness status error:', error);
     res.status(500).json({ error: 'Error obteniendo estado de fitness' });
+  }
+});
+
+// Obtener mejores esfuerzos históricos
+app.get('/api/stats/best-efforts', async (req, res) => {
+  try {
+    const distances = ['400m', '1/2 mile', '1K', '1 mile', '2 mile', '5K', '10K', '15K', 'Half-Marathon', 'Marathon'];
+
+    const results: Record<string, { time: number; date: string; activityId: string; activityName: string }> = {};
+
+    for (const distanceName of distances) {
+      const activity = await Activity.findOne({
+        'best_efforts.name': distanceName
+      }).sort({ [`best_efforts.moving_time`]: 1 });
+
+      if (activity) {
+        const effort = activity.best_efforts?.find((e: any) => e.name === distanceName);
+        if (effort) {
+          // Buscar el mejor tiempo entre todas las actividades
+          const allActivities = await Activity.find({
+            'best_efforts.name': distanceName
+          });
+
+          let bestTime = Infinity;
+          let bestActivity = null;
+          let bestEffort = null;
+
+          for (const act of allActivities) {
+            const eff = act.best_efforts?.find((e: any) => e.name === distanceName);
+            if (eff && eff.moving_time < bestTime) {
+              bestTime = eff.moving_time;
+              bestActivity = act;
+              bestEffort = eff;
+            }
+          }
+
+          if (bestActivity && bestEffort) {
+            results[distanceName] = {
+              time: bestEffort.moving_time,
+              date: bestActivity.startTime.toISOString(),
+              activityId: bestActivity._id.toString(),
+              activityName: bestActivity.name || 'Sin nombre'
+            };
+          }
+        }
+      }
+    }
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error getting best efforts:', error);
+    res.status(500).json({ error: 'Error obteniendo mejores esfuerzos' });
+  }
+});
+
+// Predicciones basadas en best efforts
+app.get('/api/stats/predictions', async (req, res) => {
+  try {
+    // Buscar mejores tiempos para 5K y 10K
+    const activities = await Activity.find({
+      'bestEfforts': { $exists: true, $ne: [] }
+    });
+
+    let best5K: number | null = null;
+    let best10K: number | null = null;
+    let bestHalf: number | null = null;
+
+    for (const activity of activities) {
+      for (const effort of activity.bestEfforts || []) {
+        if (effort.name === '5K' && (!best5K || effort.moving_time < best5K)) {
+          best5K = effort.moving_time;
+        }
+        if (effort.name === '10K' && (!best10K || effort.moving_time < best10K)) {
+          best10K = effort.moving_time;
+        }
+        if (effort.name === 'Half-Marathon' && (!bestHalf || effort.moving_time < bestHalf)) {
+          bestHalf = effort.moving_time;
+        }
+      }
+    }
+
+    // Fórmula de Riegel: T2 = T1 * (D2/D1)^1.06
+    const riegel = (time: number, dist1: number, dist2: number) => {
+      return time * Math.pow(dist2 / dist1, 1.06);
+    };
+
+    const predictions: Record<string, { time: number; basedOn: string }> = {};
+
+    // Usar el mejor dato disponible para predecir
+    if (best5K) {
+      predictions['5K'] = { time: best5K, basedOn: 'PR' };
+      predictions['10K'] = { time: Math.round(riegel(best5K, 5, 10)), basedOn: '5K PR' };
+      predictions['Half-Marathon'] = { time: Math.round(riegel(best5K, 5, 21.0975)), basedOn: '5K PR' };
+      predictions['Marathon'] = { time: Math.round(riegel(best5K, 5, 42.195)), basedOn: '5K PR' };
+    }
+
+    // Si tenemos 10K real, usarlo para HM y M (más preciso)
+    if (best10K) {
+      if (!predictions['10K'] || best10K < predictions['10K'].time) {
+        predictions['10K'] = { time: best10K, basedOn: 'PR' };
+      }
+      const hmFromM10K = Math.round(riegel(best10K, 10, 21.0975));
+      const mFrom10K = Math.round(riegel(best10K, 10, 42.195));
+
+      if (!predictions['Half-Marathon'] || hmFromM10K < predictions['Half-Marathon'].time) {
+        predictions['Half-Marathon'] = { time: hmFromM10K, basedOn: '10K PR' };
+      }
+      if (!predictions['Marathon'] || mFrom10K < predictions['Marathon'].time) {
+        predictions['Marathon'] = { time: mFrom10K, basedOn: '10K PR' };
+      }
+    }
+
+    // Si tenemos HM real, usarlo para M
+    if (bestHalf) {
+      if (!predictions['Half-Marathon'] || bestHalf < predictions['Half-Marathon'].time) {
+        predictions['Half-Marathon'] = { time: bestHalf, basedOn: 'PR' };
+      }
+      const mFromHalf = Math.round(riegel(bestHalf, 21.0975, 42.195));
+      if (!predictions['Marathon'] || mFromHalf < predictions['Marathon'].time) {
+        predictions['Marathon'] = { time: mFromHalf, basedOn: 'HM PR' };
+      }
+    }
+
+    res.json({
+      predictions,
+      personalRecords: {
+        '5K': best5K,
+        '10K': best10K,
+        'Half-Marathon': bestHalf
+      }
+    });
+  } catch (error) {
+    console.error('Error calculating predictions:', error);
+    res.status(500).json({ error: 'Error calculando predicciones' });
   }
 });
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, subWeeks, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   Chart as ChartJS,
@@ -11,8 +11,10 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
+import { ActivityDetail } from './components/ActivityDetail';
 
 ChartJS.register(
   CategoryScale,
@@ -22,16 +24,18 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const API_URL = 'http://157.254.174.220:3001/api';
 
-// Tipos
 interface Activity {
   _id: string;
   activityType: string;
   activityCategory: string;
+  workoutType?: string;
+  runningSubType?: string;
   startTime: string;
   duration: number;
   distance: number;
@@ -39,6 +43,7 @@ interface Activity {
   averagePace?: number;
   calories?: number;
   name?: string;
+  elevationGain?: number;
 }
 
 interface Goal {
@@ -53,66 +58,59 @@ interface Goal {
   completed: boolean;
 }
 
-interface Stats {
-  running: { count: number; distance: number; duration: number; avgHR: number; avgPace: string };
-  strength: { count: number; duration: number; calories: number };
-  cycling: { count: number; distance: number; duration: number };
+interface WeeklyVolume {
+  week: string;
+  weekStart: Date;
+  distance: number;
+  duration: number;
+  sessions: number;
+  avgPace: number;
 }
 
-interface StravaUser {
-  name: string;
-  picture: string;
-}
-
-// Períodos disponibles
 const PERIODS = [
-  { value: '1w', label: '1 Semana' },
-  { value: '1m', label: '1 Mes' },
-  { value: '3m', label: '3 Meses' },
-  { value: '6m', label: '6 Meses' },
-  { value: '1y', label: '1 Año' },
-  { value: '3y', label: '3 Años' },
+  { value: '1w', label: '7D' },
+  { value: '1m', label: '1M' },
+  { value: '3m', label: '3M' },
+  { value: '6m', label: '6M' },
+  { value: '1y', label: '1A' },
   { value: 'all', label: 'Todo' },
 ];
 
-const RACE_TYPES = [
-  { value: '5k', label: '5K' },
-  { value: '10k', label: '10K' },
-  { value: 'half_marathon', label: 'Media Maratón' },
-  { value: 'marathon', label: 'Maratón' },
-  { value: 'trail', label: 'Trail' },
-  { value: 'ultra', label: 'Ultra' },
-  { value: 'other', label: 'Otra' },
-];
+const WORKOUT_LABELS: Record<string, string> = {
+  intervals: 'INT',
+  tempo: 'TMP',
+  long_run: 'LSD',
+  easy: 'EASY',
+  recovery: 'REC',
+  race: 'RACE',
+  fartlek: 'FRTK',
+  general: 'RUN'
+};
 
 function App() {
-  // Estados principales
-  const [activeTab, setActiveTab] = useState<'resumen' | 'coach' | 'actividades' | 'objetivos'>('resumen');
-  const [period, setPeriod] = useState('1w');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'activities' | 'goals'>('dashboard');
+  const [period, setPeriod] = useState('3m');
   const [loading, setLoading] = useState(false);
-  
-  // Strava
   const [stravaConnected, setStravaConnected] = useState(false);
-  const [stravaUser, setStravaUser] = useState<StravaUser | null>(null);
-  
-  // Datos
+  const [stravaUser, setStravaUser] = useState<{ name: string; picture: string } | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [fitnessStatus, setFitnessStatus] = useState<string>('');
+  const [allActivities, setAllActivities] = useState<Activity[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  
-  // Paginación
+  const [weeklyVolumes, setWeeklyVolumes] = useState<WeeklyVolume[]>([]);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
+  const [thisWeekStats, setThisWeekStats] = useState({ distance: 0, sessions: 0, duration: 0, avgPace: 0 });
+  const [lastWeekStats, setLastWeekStats] = useState({ distance: 0, sessions: 0, duration: 0, avgPace: 0 });
+  const [periodStats, setPeriodStats] = useState({
+    running: { count: 0, distance: 0, duration: 0, avgPace: 0, avgHR: 0 },
+    strength: { count: 0, duration: 0 }
+  });
+
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedWeek, setSelectedWeek] = useState<{ start: Date; end: Date } | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [totalActivities, setTotalActivities] = useState(0);
-  const ITEMS_PER_PAGE = 50;
-  
-  // Chat
-  const [chatMessages, setChatMessages] = useState<{role: string; content: string}[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  
-  // Modal de Goals
+
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [goalForm, setGoalForm] = useState({
@@ -125,7 +123,6 @@ function App() {
     notes: '',
   });
 
-  // Cargar datos al inicio y cuando cambia el período
   useEffect(() => {
     checkStravaStatus();
     loadGoals();
@@ -133,11 +130,12 @@ function App() {
 
   useEffect(() => {
     if (stravaConnected) {
-      loadData();
+      loadAllData();
+      loadPredictions();
     }
   }, [period, stravaConnected]);
 
-  // Verificar si volvemos de Strava OAuth
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('strava') === 'connected') {
@@ -152,8 +150,13 @@ function App() {
       const res = await fetch(`${API_URL}/strava/status`);
       const data = await res.json();
       setStravaConnected(data.connected);
-      if (data.user) {
-        setStravaUser(data.user);
+      if (data.user) setStravaUser(data.user);
+      if (data.connected) {
+        fetch(`${API_URL}/strava/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullSync: false })
+        }).catch(console.error);
       }
     } catch (error) {
       console.error('Error checking Strava:', error);
@@ -161,129 +164,121 @@ function App() {
   };
 
   const connectStrava = async () => {
-    try {
-      const res = await fetch(`${API_URL}/strava/auth`);
-      const data = await res.json();
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Error connecting Strava:', error);
-    }
+    const res = await fetch(`${API_URL}/strava/auth`);
+    const data = await res.json();
+    window.location.href = data.url;
   };
 
   const syncStrava = async () => {
     setLoading(true);
-    try {
-      await fetch(`${API_URL}/strava/sync`, { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullSync: false })
-      });
-      await loadData();
-    } catch (error) {
-      console.error('Error syncing:', error);
-    }
+    await fetch(`${API_URL}/strava/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullSync: false })
+    });
+    await loadAllData();
     setLoading(false);
   };
 
-  const loadData = async () => {
+  const loadAllData = async () => {
     setLoading(true);
-    setCurrentPage(1);
-    try {
-      await Promise.all([
-        loadStats(),
-        loadActivities(1),
-        loadFitnessStatus(),
-      ]);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
+    await Promise.all([
+      loadActivities(1),
+      loadStats(),
+      loadWeeklyVolumes(),
+    ]);
     setLoading(false);
+  };
+
+  const loadActivities = async (page: number = 1) => {
+    const res = await fetch(`${API_URL}/activities?period=${period}&page=${page}&limit=50`);
+    const data = await res.json();
+    setActivities(data.activities);
+    setAllActivities(data.activities);
+    setCurrentPage(data.pagination.page);
+    setTotalPages(data.pagination.totalPages);
+    setTotalActivities(data.pagination.total);
+    calculateThisWeekStats(data.activities);
   };
 
   const loadStats = async () => {
     const res = await fetch(`${API_URL}/stats?period=${period}`);
     const data = await res.json();
-    setStats(data);
+    setPeriodStats(data);
   };
 
-  const loadActivities = async (page: number = 1) => {
-    const res = await fetch(`${API_URL}/activities?period=${period}&page=${page}&limit=${ITEMS_PER_PAGE}`);
+  const loadWeeklyVolumes = async () => {
+    const res = await fetch(`${API_URL}/activities?period=${period}&page=1&limit=500`);
     const data = await res.json();
-    setActivities(data.activities);
-    setCurrentPage(data.pagination.page);
-    setTotalPages(data.pagination.totalPages);
-    setTotalActivities(data.pagination.total);
+    const acts: Activity[] = data.activities;
+
+    const weeks: Map<string, WeeklyVolume> = new Map();
+    const numWeeks = period === '1w' ? 4 : period === '1m' ? 6 : period === '3m' ? 12 : period === '6m' ? 24 : 52;
+
+    for (let i = 0; i < numWeeks; i++) {
+      const weekStart = startOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
+      const key = format(weekStart, 'yyyy-MM-dd');
+      weeks.set(key, { week: `S${numWeeks - i}`, weekStart, distance: 0, duration: 0, sessions: 0, avgPace: 0 });
+    }
+
+    acts.filter(a => a.activityCategory === 'cardio_running').forEach(a => {
+      const weekStart = startOfWeek(new Date(a.startTime), { weekStartsOn: 1 });
+      const key = format(weekStart, 'yyyy-MM-dd');
+      const week = weeks.get(key);
+      if (week) {
+        week.distance += a.distance;
+        week.duration += a.duration;
+        week.sessions += 1;
+      }
+    });
+
+    const sortedWeeks = Array.from(weeks.values())
+      .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime())
+      .slice(-12);
+
+    setWeeklyVolumes(sortedWeeks);
   };
 
-  const loadFitnessStatus = async () => {
-    const res = await fetch(`${API_URL}/fitness-status?period=${period}`);
-    const data = await res.json();
-    setFitnessStatus(data.status || 'Sin datos disponibles');
+  const calculateThisWeekStats = (activities: Activity[]) => {
+    const now = new Date();
+    const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+    const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+
+    const thisWeek = activities.filter(a =>
+      a.activityCategory === 'cardio_running' &&
+      new Date(a.startTime) >= thisWeekStart
+    );
+
+    const lastWeek = activities.filter(a =>
+      a.activityCategory === 'cardio_running' &&
+      new Date(a.startTime) >= lastWeekStart &&
+      new Date(a.startTime) <= lastWeekEnd
+    );
+
+    const calcStats = (acts: Activity[]) => ({
+      distance: acts.reduce((sum, a) => sum + a.distance, 0),
+      sessions: acts.length,
+      duration: acts.reduce((sum, a) => sum + a.duration, 0),
+      avgPace: acts.length > 0 ? acts.reduce((sum, a) => sum + (a.averagePace || 0), 0) / acts.length : 0
+    });
+
+    setThisWeekStats(calcStats(thisWeek));
+    setLastWeekStats(calcStats(lastWeek));
   };
 
   const loadGoals = async () => {
     try {
       const res = await fetch(`${API_URL}/goals`);
-      const data = await res.json();
-      setGoals(data);
+      setGoals(await res.json());
     } catch (error) {
       console.error('Error loading goals:', error);
     }
   };
 
-  // Chat con el coach
-  const sendChatMessage = async () => {
-    if (!chatInput.trim() || chatLoading) return;
-    
-    const userMessage = chatInput;
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setChatLoading(true);
-
-    try {
-      const res = await fetch(`${API_URL}/activities/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          history: chatMessages,
-          period,
-        }),
-      });
-      const data = await res.json();
-      setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-    } catch (error) {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error al procesar tu mensaje.' }]);
-    }
-    setChatLoading(false);
-  };
-
-  // Goals CRUD
-  const openGoalModal = (goal?: Goal) => {
-    if (goal) {
-      setEditingGoal(goal);
-      setGoalForm({
-        name: goal.name,
-        type: goal.type,
-        raceType: goal.raceType,
-        distance: goal.distance ? (goal.distance / 1000).toString() : '',
-        targetDate: goal.targetDate.split('T')[0],
-        targetTime: goal.targetTime || '',
-        notes: goal.notes || '',
-      });
-    } else {
-      setEditingGoal(null);
-      setGoalForm({
-        name: '',
-        type: 'intermediate',
-        raceType: '10k',
-        distance: '',
-        targetDate: '',
-        targetTime: '',
-        notes: '',
-      });
-    }
-    setShowGoalModal(true);
+  const loadActivityDetail = async (activityId: string) => {
+    const res = await fetch(`${API_URL}/activities/${activityId}`);
+    setSelectedActivity(await res.json());
   };
 
   const saveGoal = async () => {
@@ -296,788 +291,565 @@ function App() {
       targetTime: goalForm.targetTime || undefined,
       notes: goalForm.notes || undefined,
     };
-
-    try {
-      if (editingGoal) {
-        await fetch(`${API_URL}/goals/${editingGoal._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(goalData),
-        });
-      } else {
-        await fetch(`${API_URL}/goals`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(goalData),
-        });
-      }
-      setShowGoalModal(false);
-      loadGoals();
-      loadFitnessStatus();
-    } catch (error) {
-      console.error('Error saving goal:', error);
+    if (editingGoal) {
+      await fetch(`${API_URL}/goals/${editingGoal._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(goalData),
+      });
+    } else {
+      await fetch(`${API_URL}/goals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(goalData),
+      });
     }
+    setShowGoalModal(false);
+    loadGoals();
   };
 
   const deleteGoal = async (id: string) => {
-    if (!confirm('¿Eliminar este objetivo?')) return;
+    if (!confirm('¿Eliminar objetivo?')) return;
+    await fetch(`${API_URL}/goals/${id}`, { method: 'DELETE' });
+    loadGoals();
+  };
+
+  const formatPace = (pace: number) => {
+    if (!pace) return '--:--';
+    const mins = Math.floor(pace);
+    const secs = Math.round((pace - mins) * 60);
+    if (secs === 60) return `${mins + 1}:00`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatDistance = (m: number) => (m / 1000).toFixed(1);
+
+  const formatDuration = (s: number) => {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
+
+  const getPercentChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+  };
+
+  const primaryGoal = goals.find(g => g.type === 'primary' && !g.completed);
+  const daysToGoal = primaryGoal ? differenceInDays(new Date(primaryGoal.targetDate), new Date()) : null;
+
+  const [predictions, setPredictions] = useState<Record<string, { time: number; basedOn: string }> | null>(null);
+  const loadPredictions = async () => {
     try {
-      await fetch(`${API_URL}/goals/${id}`, { method: 'DELETE' });
-      loadGoals();
-      loadFitnessStatus();
+      const res = await fetch(`${API_URL}/stats/predictions`);
+      const data = await res.json();
+      setPredictions(data.predictions);
     } catch (error) {
-      console.error('Error deleting goal:', error);
+      console.error('Error loading predictions:', error);
     }
   };
 
-  const toggleGoalCompleted = async (goal: Goal) => {
-    try {
-      await fetch(`${API_URL}/goals/${goal._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !goal.completed }),
-      });
-      loadGoals();
-    } catch (error) {
-      console.error('Error updating goal:', error);
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+
+  const weeklyVolumeChart = {
+    labels: weeklyVolumes.map(w => format(w.weekStart, 'dd MMM', { locale: es })),
+    datasets: [{
+      data: weeklyVolumes.map(w => w.distance / 1000),
+      backgroundColor: weeklyVolumes.map((w, i) =>
+        selectedWeek && format(w.weekStart, 'yyyy-MM-dd') === format(selectedWeek.start, 'yyyy-MM-dd')
+          ? '#06b6d4'
+          : i === weeklyVolumes.length - 1
+            ? 'rgba(6, 182, 212, 0.7)'
+            : 'rgba(6, 182, 212, 0.4)'
+      ),
+      borderRadius: 4,
+      barThickness: 20,
+    }],
+  };
+
+  const handleWeekClick = (weekIndex: number) => {
+    const week = weeklyVolumes[weekIndex];
+    if (week) {
+      const weekEnd = endOfWeek(week.weekStart, { weekStartsOn: 1 });
+      setSelectedWeek({ start: week.weekStart, end: weekEnd });
+      setActiveTab('activities');
     }
   };
 
-  // Formatters
-  const formatPace = (pace: string | number) => {
-    const paceNum = typeof pace === 'string' ? parseFloat(pace) : pace;
-    if (!paceNum || paceNum === 0) return '-';
-    const minutes = Math.floor(paceNum);
-    const seconds = Math.round((paceNum - minutes) * 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')} /km`;
+
+  const thisWeekDays = eachDayOfInterval({
+    start: startOfWeek(new Date(), { weekStartsOn: 1 }),
+    end: endOfWeek(new Date(), { weekStartsOn: 1 })
+  });
+
+  const getActivitiesForDay = (date: Date) => {
+    return allActivities.filter(a =>
+      format(new Date(a.startTime), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+    );
   };
 
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) return `${hours}h ${mins}m`;
-    return `${mins}m`;
-  };
 
-  const formatDistance = (meters: number) => {
-    return (meters / 1000).toFixed(1) + ' km';
-  };
+  if (!stravaConnected) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-6 font-light tracking-tight">RUNNING</div>
+          <div className="text-gray-500 mb-8">Dashboard personal de entrenamiento</div>
+          <button onClick={connectStrava}
+            className="bg-[#fc4c02] hover:bg-[#e34402] px-8 py-3 rounded font-medium tracking-wide">
+            Conectar con Strava
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const getDaysUntil = (date: string) => {
-    const days = Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-    if (days < 0) return 'Pasado';
-    if (days === 0) return 'Hoy';
-    if (days === 1) return 'Mañana';
-    return `${days} días`;
-  };
-
-  // Charts data
-  const getRunningChartData = () => {
-    const runningActivities = activities
-      .filter(a => a.activityCategory === 'cardio_running')
-      .slice(0, 14)
-      .reverse();
-
-    return {
-      labels: runningActivities.map(a => format(new Date(a.startTime), 'dd MMM', { locale: es })),
-      datasets: [{
-        label: 'Distancia (km)',
-        data: runningActivities.map(a => (a.distance / 1000).toFixed(1)),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.3,
-        fill: true,
-      }],
-    };
-  };
-
-  const getWeeklyVolumeData = () => {
-    const running = stats?.running.duration || 0;
-    const strength = stats?.strength.duration || 0;
-    const cycling = stats?.cycling?.duration || 0;
-
-    return {
-      labels: ['Running', 'Fuerza', 'Ciclismo'],
-      datasets: [{
-        label: 'Minutos',
-        data: [running / 60, strength / 60, cycling / 60],
-        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
-      }],
-    };
-  };
-
-  // Render principal
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+      <header className="border-b border-gray-800/50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🏃</span>
-              <h1 className="text-xl font-bold">Fitness Dashboard</h1>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {stravaConnected ? (
-                <>
-                  {stravaUser && (
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      {stravaUser.picture && (
-                        <img src={stravaUser.picture} alt="" className="w-8 h-8 rounded-full" />
-                      )}
-                      <span>{stravaUser.name}</span>
-                    </div>
-                  )}
-                  <button
-                    onClick={syncStrava}
-                    disabled={loading}
-                    className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2"
-                  >
-                    {loading ? '⏳' : '🔄'} Sync
+            <div className="flex items-center gap-8">
+              <span className="text-xl font-light tracking-tight">RUNNING</span>
+              <nav className="flex gap-1">
+                {(['dashboard', 'activities', 'goals'] as const).map(tab => (
+                  <button key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'
+                      }`}>
+                    {tab === 'dashboard' ? 'Dashboard' : tab === 'activities' ? 'Actividades' : 'Objetivos'}
                   </button>
-                </>
-              ) : (
-                <button
-                  onClick={connectStrava}
-                  className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg font-medium"
-                >
-                  Conectar Strava
-                </button>
-              )}
+                ))}
+              </nav>
             </div>
-          </div>
 
-          {/* Tabs y Period Selector */}
-          <div className="flex items-center justify-between mt-4">
-            <nav className="flex gap-1">
-              {[
-                { id: 'resumen', label: '📊 Resumen' },
-                { id: 'coach', label: '🤖 Coach IA' },
-                { id: 'actividades', label: '📋 Actividades' },
-                { id: 'objetivos', label: '🎯 Objetivos' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-
-            {/* Period Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Período:</span>
-              <div className="flex bg-gray-700 rounded-lg p-1">
+            <div className="flex items-center gap-6">
+              <div className="flex gap-1 bg-gray-900/50 rounded p-1">
                 {PERIODS.map(p => (
-                  <button
-                    key={p.value}
-                    onClick={() => setPeriod(p.value)}
-                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                      period === p.value
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
+                  <button key={p.value} onClick={() => setPeriod(p.value)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${period === p.value ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-white'
+                      }`}>
                     {p.label}
                   </button>
                 ))}
               </div>
+
+              <button onClick={syncStrava} disabled={loading}
+                className="text-gray-500 hover:text-white transition-colors">
+                <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+
+              {stravaUser && (
+                <img src={stravaUser.picture} alt="" className="w-8 h-8 rounded-full" />
+              )}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {!stravaConnected ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">🏃‍♂️</div>
-            <h2 className="text-2xl font-bold mb-2">Conecta tu cuenta de Strava</h2>
-            <p className="text-gray-400 mb-6">Sincroniza tus actividades para ver tu análisis personalizado</p>
-            <button
-              onClick={connectStrava}
-              className="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-lg font-medium text-lg"
-            >
-              Conectar con Strava
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Tab: Resumen */}
-            {activeTab === 'resumen' && (
-              <div className="space-y-6">
-                {/* Goals activos (mini preview) */}
-                {goals.filter(g => !g.completed).length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-xl p-4 border border-purple-700/50">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold flex items-center gap-2">
-                        🎯 Próximos Objetivos
-                      </h3>
-                      <button 
-                        onClick={() => setActiveTab('objetivos')}
-                        className="text-sm text-blue-400 hover:text-blue-300"
-                      >
-                        Ver todos →
-                      </button>
-                    </div>
-                    <div className="flex gap-4 overflow-x-auto pb-2">
-                      {goals.filter(g => !g.completed).slice(0, 3).map(goal => (
-                        <div 
-                          key={goal._id}
-                          className={`flex-shrink-0 px-4 py-2 rounded-lg ${
-                            goal.type === 'primary' 
-                              ? 'bg-yellow-500/20 border border-yellow-500/50' 
-                              : 'bg-gray-700/50 border border-gray-600'
-                          }`}
-                        >
-                          <div className="font-medium">{goal.name}</div>
-                          <div className="text-sm text-gray-400">
-                            {format(new Date(goal.targetDate), 'dd MMM yyyy', { locale: es })} • {getDaysUntil(goal.targetDate)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8">
+            {primaryGoal && (
+              <div className="bg-gradient-to-r from-cyan-900/20 to-transparent border border-cyan-900/30 rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-gray-400 text-sm mb-1">Próximo objetivo</div>
+                    <div className="text-2xl font-light">{primaryGoal.name}</div>
                   </div>
-                )}
-
-                {/* Fitness Status */}
-                <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl p-6 border border-blue-700/50">
-                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    📈 Estado de Fitness 
-                    <span className="text-sm font-normal text-gray-400">
-                      ({PERIODS.find(p => p.value === period)?.label})
-                    </span>
-                  </h2>
-                  {loading ? (
-                    <div className="animate-pulse">Analizando...</div>
-                  ) : (
-                    <div className="prose prose-invert max-w-none whitespace-pre-wrap">
-                      {fitnessStatus}
+                  <div className="text-right">
+                    <div className="text-4xl font-light text-cyan-400">{daysToGoal}</div>
+                    <div className="text-gray-500 text-sm">días</div>
+                  </div>
+                  {primaryGoal.targetTime && (
+                    <div className="text-right">
+                      <div className="text-gray-400 text-sm">Objetivo</div>
+                      <div className="text-2xl font-light">{primaryGoal.targetTime}</div>
                     </div>
                   )}
                 </div>
-
-                {/* Stats Cards */}
-                <div className="space-y-4">
-                  {/* Running Stats */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                      🏃 Running / Cardio
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <StatCard label="Sesiones" value={stats?.running.count || 0} />
-                      <StatCard label="Distancia" value={formatDistance(stats?.running.distance || 0)} />
-                      <StatCard label="Tiempo" value={`${((stats?.running.duration || 0) / 3600).toFixed(1)} hrs`} />
-                      <StatCard label="Ritmo Prom" value={formatPace(stats?.running.avgPace || '0')} />
-                      <StatCard label="FC Prom" value={`${stats?.running.avgHR || '-'} bpm`} />
-                    </div>
-                  </div>
-
-                  {/* Strength Stats */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                      💪 Fuerza
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <StatCard label="Sesiones" value={stats?.strength.count || 0} />
-                      <StatCard label="Tiempo" value={`${((stats?.strength.duration || 0) / 3600).toFixed(1)} hrs`} />
-                      <StatCard label="Calorías" value={stats?.strength.calories || 0} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Charts */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gray-800 rounded-xl p-4">
-                    <h3 className="font-semibold mb-4">📈 Últimas Carreras (km)</h3>
-                    <Line 
-                      data={getRunningChartData()} 
-                      options={{
-                        responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                          y: { grid: { color: 'rgba(255,255,255,0.1)' } },
-                          x: { grid: { display: false } }
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="bg-gray-800 rounded-xl p-4">
-                    <h3 className="font-semibold mb-4">⏱️ Distribución por Tipo (min)</h3>
-                    <Bar 
-                      data={getWeeklyVolumeData()}
-                      options={{
-                        responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                          y: { grid: { color: 'rgba(255,255,255,0.1)' } },
-                          x: { grid: { display: false } }
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
               </div>
             )}
 
-            {/* Tab: Coach IA */}
-            {activeTab === 'coach' && (
-              <div className="max-w-3xl mx-auto">
-                <div className="bg-gray-800 rounded-xl overflow-hidden">
-                  <div className="p-4 border-b border-gray-700">
-                    <h2 className="font-bold flex items-center gap-2">
-                      🤖 Coach IA
-                      <span className="text-sm font-normal text-gray-400">
-                        (Analizando: {PERIODS.find(p => p.value === period)?.label})
-                      </span>
-                    </h2>
-                  </div>
-                  
-                  {/* Chat Messages */}
-                  <div className="h-96 overflow-y-auto p-4 space-y-4">
-                    {chatMessages.length === 0 && (
-                      <div className="text-center text-gray-500 py-10">
-                        <div className="text-4xl mb-2">💬</div>
-                        <p>Pregúntame sobre tu entrenamiento</p>
-                        <div className="flex flex-wrap justify-center gap-2 mt-4">
-                          {[
-                            '¿Cómo va mi semana?',
-                            '¿Estoy listo para un 10K?',
-                            '¿Debería descansar?',
-                            'Analiza mi volumen',
-                          ].map(q => (
-                            <button
-                              key={q}
-                              onClick={() => { setChatInput(q); }}
-                              className="px-3 py-1 bg-gray-700 rounded-full text-sm hover:bg-gray-600"
-                            >
-                              {q}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {chatMessages.map((msg, i) => (
-                      <div
-                        key={i}
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-[80%] px-4 py-2 rounded-2xl whitespace-pre-wrap ${
-                            msg.role === 'user'
-                              ? 'bg-blue-600 text-white rounded-br-md'
-                              : 'bg-gray-700 text-gray-100 rounded-bl-md'
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
-                    {chatLoading && (
-                      <div className="flex justify-start">
-                        <div className="bg-gray-700 px-4 py-2 rounded-2xl rounded-bl-md">
-                          <span className="animate-pulse">Pensando...</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+            <div className="grid grid-cols-4 gap-4">
+              <MetricCard
+                label="Esta semana"
+                value={`${formatDistance(thisWeekStats.distance)} km`}
+                change={getPercentChange(thisWeekStats.distance, lastWeekStats.distance)}
+              />
+              <MetricCard
+                label="Ritmo promedio"
+                value={`${formatPace(periodStats.running.avgPace || 0)}/km`}
+              />
+              <MetricCard
+                label="FC promedio"
+                value={`${Math.round(periodStats.running.avgHR || 0)} bpm`}
+              />
+              <MetricCard
+                label="Sesiones"
+                value={thisWeekStats.sessions.toString()}
+                subtitle={`de ${periodStats.running.count} totales`}
+              />
+            </div>
 
-                  {/* Chat Input */}
-                  <div className="p-4 border-t border-gray-700">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={chatInput}
-                        onChange={e => setChatInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
-                        placeholder="Escribe tu pregunta..."
-                        className="flex-1 bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        onClick={sendChatMessage}
-                        disabled={chatLoading || !chatInput.trim()}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-4 py-2 rounded-lg font-medium"
-                      >
-                        Enviar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Actividades */}
-            {activeTab === 'actividades' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold">
-                    📋 Actividades ({totalActivities})
-                  </h2>
-                </div>
-
-                <div className="bg-gray-800 rounded-xl overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-gray-700">
-                      <tr>
-                        <th className="px-4 py-3 text-left">Fecha</th>
-                        <th className="px-4 py-3 text-left">Tipo</th>
-                        <th className="px-4 py-3 text-left">Nombre</th>
-                        <th className="px-4 py-3 text-right">Distancia</th>
-                        <th className="px-4 py-3 text-right">Tiempo</th>
-                        <th className="px-4 py-3 text-right">Ritmo</th>
-                        <th className="px-4 py-3 text-right">FC</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-700">
-                      {activities.map(activity => (
-                        <tr key={activity._id} className="hover:bg-gray-700/50">
-                          <td className="px-4 py-3 text-sm">
-                            {format(new Date(activity.startTime), 'dd MMM yyyy', { locale: es })}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              activity.activityCategory === 'cardio_running' 
-                                ? 'bg-blue-500/20 text-blue-300'
-                                : activity.activityCategory === 'strength'
-                                ? 'bg-yellow-500/20 text-yellow-300'
-                                : 'bg-green-500/20 text-green-300'
-                            }`}>
-                              {activity.activityCategory === 'cardio_running' ? '🏃 Running' 
-                                : activity.activityCategory === 'strength' ? '💪 Fuerza'
-                                : activity.activityType}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm">{activity.name || '-'}</td>
-                          <td className="px-4 py-3 text-right text-sm">
-                            {activity.distance > 0 ? formatDistance(activity.distance) : '-'}
-                          </td>
-                          <td className="px-4 py-3 text-right text-sm">
-                            {formatDuration(activity.duration)}
-                          </td>
-                          <td className="px-4 py-3 text-right text-sm">
-                            {activity.averagePace ? formatPace(activity.averagePace) : '-'}
-                          </td>
-                          <td className="px-4 py-3 text-right text-sm">
-                            {activity.averageHR ? `${Math.round(activity.averageHR)} bpm` : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Paginación */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-4">
-                    <button
-                      onClick={() => loadActivities(1)}
-                      disabled={currentPage === 1}
-                      className="px-3 py-2 bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-600"
-                    >
-                      ⏮️
-                    </button>
-                    <button
-                      onClick={() => loadActivities(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-3 py-2 bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-600"
-                    >
-                      ◀️
-                    </button>
-                    
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
+            <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-2 bg-gray-900/30 rounded-lg p-6">
+                <div className="text-sm text-gray-400 mb-4">Volumen semanal (km)</div>
+                <div className="h-48">
+                  <Bar
+                    data={weeklyVolumeChart}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      onClick: (_, elements) => {
+                        if (elements.length > 0) {
+                          handleWeekClick(elements[0].index);
                         }
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => loadActivities(pageNum)}
-                            className={`px-3 py-2 rounded-lg ${
-                              currentPage === pageNum 
-                                ? 'bg-blue-600 text-white' 
-                                : 'bg-gray-700 hover:bg-gray-600'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                    </div>
+                      },
+                      plugins: { legend: { display: false } },
+                      scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280' } },
+                        x: { grid: { display: false }, ticks: { color: '#6b7280', maxRotation: 45 } }
+                      },
+                      onHover: (event, elements) => {
+                        const target = event.native?.target as HTMLElement;
+                        if (target) {
+                          target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                        }
+                      }
+                    }}
+                  />
 
-                    <button
-                      onClick={() => loadActivities(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-2 bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-600"
-                    >
-                      ▶️
-                    </button>
-                    <button
-                      onClick={() => loadActivities(totalPages)}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-2 bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-600"
-                    >
-                      ⏭️
-                    </button>
-
-                    <span className="text-gray-400 ml-4">
-                      Página {currentPage} de {totalPages}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab: Objetivos */}
-            {activeTab === 'objetivos' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold">🎯 Mis Objetivos</h2>
-                  <button
-                    onClick={() => openGoalModal()}
-                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2"
-                  >
-                    ➕ Agregar Objetivo
-                  </button>
                 </div>
+              </div>
 
-                {goals.length === 0 ? (
-                  <div className="text-center py-16 bg-gray-800 rounded-xl">
-                    <div className="text-5xl mb-4">🎯</div>
-                    <h3 className="text-xl font-semibold mb-2">Sin objetivos definidos</h3>
-                    <p className="text-gray-400 mb-4">Agrega tus próximas carreras para que el análisis las considere</p>
-                    <button
-                      onClick={() => openGoalModal()}
-                      className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium"
-                    >
-                      Agregar primer objetivo
-                    </button>
+              <div className="bg-gray-900/30 rounded-lg p-6">
+                <div className="text-sm text-gray-400 mb-4">Predicción de tiempos</div>
+                {predictions && Object.keys(predictions).length > 0 ? (
+                  <div className="space-y-3">
+                    {['5K', '10K', 'Half-Marathon', 'Marathon'].map(dist => {
+                      const pred = predictions[dist];
+                      if (!pred) return null;
+                      return (
+                        <div key={dist} className="flex justify-between items-center">
+                          <div>
+                            <span className="text-gray-400">{dist === 'Half-Marathon' ? 'HM' : dist === 'Marathon' ? 'M' : dist}</span>
+                            {pred.basedOn === 'PR' && (
+                              <span className="ml-2 text-xs text-cyan-500">PR</span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xl font-light">{formatTime(pred.time)}</span>
+                            {pred.basedOn !== 'PR' && (
+                              <div className="text-xs text-gray-500">desde {pred.basedOn}</div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Objetivos activos */}
-                    <div>
-                      <h3 className="font-semibold text-gray-400 mb-3">Próximos</h3>
-                      <div className="space-y-3">
-                        {goals.filter(g => !g.completed).map(goal => (
-                          <div
-                            key={goal._id}
-                            className={`bg-gray-800 rounded-xl p-4 border-l-4 ${
-                              goal.type === 'primary' ? 'border-yellow-500' : 'border-blue-500'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  {goal.type === 'primary' && (
-                                    <span className="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-0.5 rounded font-medium">
-                                      PRINCIPAL
-                                    </span>
-                                  )}
-                                  <h4 className="font-semibold text-lg">{goal.name}</h4>
-                                </div>
-                                <div className="flex flex-wrap gap-3 text-sm text-gray-400">
-                                  <span>📅 {format(new Date(goal.targetDate), 'dd MMMM yyyy', { locale: es })}</span>
-                                  <span className="text-blue-400 font-medium">{getDaysUntil(goal.targetDate)}</span>
-                                  {goal.raceType && <span>🏁 {RACE_TYPES.find(r => r.value === goal.raceType)?.label}</span>}
-                                  {goal.distance && <span>📏 {(goal.distance / 1000).toFixed(0)} km</span>}
-                                  {goal.targetTime && <span>⏱️ Objetivo: {goal.targetTime}</span>}
-                                </div>
-                                {goal.notes && <p className="text-sm text-gray-500 mt-2">{goal.notes}</p>}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => toggleGoalCompleted(goal)}
-                                  className="p-2 hover:bg-gray-700 rounded-lg text-green-400"
-                                  title="Marcar como completado"
-                                >
-                                  ✓
-                                </button>
-                                <button
-                                  onClick={() => openGoalModal(goal)}
-                                  className="p-2 hover:bg-gray-700 rounded-lg"
-                                  title="Editar"
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  onClick={() => deleteGoal(goal._id)}
-                                  className="p-2 hover:bg-gray-700 rounded-lg text-red-400"
-                                  title="Eliminar"
-                                >
-                                  🗑️
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Objetivos completados */}
-                    {goals.filter(g => g.completed).length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-gray-400 mb-3">Completados</h3>
-                        <div className="space-y-3">
-                          {goals.filter(g => g.completed).map(goal => (
-                            <div
-                              key={goal._id}
-                              className="bg-gray-800/50 rounded-xl p-4 border-l-4 border-green-500 opacity-70"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="font-semibold line-through">{goal.name}</h4>
-                                  <span className="text-sm text-gray-500">
-                                    {format(new Date(goal.targetDate), 'dd MMM yyyy', { locale: es })}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => toggleGoalCompleted(goal)}
-                                    className="p-2 hover:bg-gray-700 rounded-lg"
-                                    title="Desmarcar"
-                                  >
-                                    ↩️
-                                  </button>
-                                  <button
-                                    onClick={() => deleteGoal(goal._id)}
-                                    className="p-2 hover:bg-gray-700 rounded-lg text-red-400"
-                                  >
-                                    🗑️
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <div className="text-gray-600 text-sm">Cargando predicciones...</div>
                 )}
-              </div>
-            )}
-          </>
-        )}
-      </main>
-
-      {/* Goal Modal */}
-      {showGoalModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4">
-              {editingGoal ? '✏️ Editar Objetivo' : '➕ Nuevo Objetivo'}
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Nombre de la carrera *</label>
-                <input
-                  type="text"
-                  value={goalForm.name}
-                  onChange={e => setGoalForm({...goalForm, name: e.target.value})}
-                  placeholder="Ej: Maratón Valencia"
-                  className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Tipo</label>
-                  <select
-                    value={goalForm.type}
-                    onChange={e => setGoalForm({...goalForm, type: e.target.value as 'primary' | 'intermediate'})}
-                    className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="primary">🎯 Principal</option>
-                    <option value="intermediate">📌 Intermedio</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Tipo de carrera</label>
-                  <select
-                    value={goalForm.raceType}
-                    onChange={e => setGoalForm({...goalForm, raceType: e.target.value})}
-                    className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {RACE_TYPES.map(rt => (
-                      <option key={rt.value} value={rt.value}>{rt.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Fecha *</label>
-                <input
-                  type="date"
-                  value={goalForm.targetDate}
-                  onChange={e => setGoalForm({...goalForm, targetDate: e.target.value})}
-                  className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Distancia (km)</label>
-                  <input
-                    type="number"
-                    value={goalForm.distance}
-                    onChange={e => setGoalForm({...goalForm, distance: e.target.value})}
-                    placeholder="42.195"
-                    className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Tiempo objetivo</label>
-                  <input
-                    type="text"
-                    value={goalForm.targetTime}
-                    onChange={e => setGoalForm({...goalForm, targetTime: e.target.value})}
-                    placeholder="3:30:00"
-                    className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Notas</label>
-                <textarea
-                  value={goalForm.notes}
-                  onChange={e => setGoalForm({...goalForm, notes: e.target.value})}
-                  placeholder="Detalles adicionales..."
-                  rows={2}
-                  className="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                />
               </div>
             </div>
 
+            <div className="bg-gray-900/30 rounded-lg p-6">
+              <div className="text-sm text-gray-400 mb-4">Esta semana</div>
+              <div className="grid grid-cols-7 gap-2">
+                {thisWeekDays.map(day => {
+                  const dayActivities = getActivitiesForDay(day);
+                  const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                  const isPast = day < new Date() && !isToday;
+                  const runActivity = dayActivities.find(a => a.activityCategory === 'cardio_running');
+                  const gymActivity = dayActivities.find(a => a.activityCategory === 'strength');
+
+                  return (
+                    <div key={day.toISOString()}
+                      className={`p-3 rounded-lg text-center ${isToday ? 'bg-cyan-900/30 border border-cyan-800/50' :
+                        dayActivities.length > 0 ? 'bg-gray-800/50' : 'bg-gray-900/50'
+                        }`}>
+                      <div className="text-xs text-gray-500 mb-1">
+                        {format(day, 'EEE', { locale: es }).toUpperCase()}
+                      </div>
+                      <div className="text-lg font-light mb-2">
+                        {format(day, 'd')}
+                      </div>
+                      <div className="space-y-1 min-h-[40px]">
+                        {runActivity && (
+                          <div
+                            className="text-cyan-400 text-xs font-medium cursor-pointer hover:text-cyan-300"
+                            onClick={() => loadActivityDetail(runActivity._id)}>
+                            {formatDistance(runActivity.distance)}k
+                            <span className="text-gray-500 ml-1">
+                              {WORKOUT_LABELS[runActivity.workoutType || 'general']}
+                            </span>
+                          </div>
+                        )}
+                        {gymActivity && (
+                          <div
+                            className="text-amber-400 text-xs font-medium cursor-pointer hover:text-amber-300"
+                            onClick={() => loadActivityDetail(gymActivity._id)}>
+                            GYM
+                          </div>
+                        )}
+                        {dayActivities.length === 0 && isPast && (
+                          <div className="text-gray-700 text-xs">--</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-gray-900/30 rounded-lg p-6">
+                <div className="text-sm text-gray-400 mb-4">Distribución por tipo</div>
+                <div className="space-y-3">
+                  {(() => {
+                    const types = allActivities
+                      .filter(a => a.activityCategory === 'cardio_running')
+                      .reduce((acc, a) => {
+                        const type = a.workoutType || 'general';
+                        acc[type] = (acc[type] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+
+                    const total = Object.values(types).reduce((a, b) => a + b, 0);
+                    const sorted = Object.entries(types).sort((a, b) => b[1] - a[1]);
+
+                    return sorted.slice(0, 5).map(([type, count]) => (
+                      <div key={type} className="flex items-center gap-3">
+                        <div className="w-24 text-sm text-gray-400 capitalize">
+                          {type.replace('_', ' ')}
+                        </div>
+                        <div className="flex-1 bg-gray-800 rounded-full h-2">
+                          <div className="bg-cyan-500 h-2 rounded-full"
+                            style={{ width: `${(count / total) * 100}%` }} />
+                        </div>
+                        <div className="w-12 text-right text-sm text-gray-500">
+                          {Math.round((count / total) * 100)}%
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+
+              <div className="bg-gray-900/30 rounded-lg p-6">
+                <div className="text-sm text-gray-400 mb-4">Resumen del período</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-3xl font-light">{formatDistance(periodStats.running.distance)}</div>
+                    <div className="text-sm text-gray-500">km totales</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-light">{periodStats.running.count}</div>
+                    <div className="text-sm text-gray-500">carreras</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-light">{Math.round(periodStats.running.duration / 3600)}</div>
+                    <div className="text-sm text-gray-500">horas</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-light">{periodStats.strength.count}</div>
+                    <div className="text-sm text-gray-500">sesiones fuerza</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'activities' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-400">
+                {selectedWeek
+                  ? `Semana del ${format(selectedWeek.start, 'dd MMM', { locale: es })} al ${format(selectedWeek.end, 'dd MMM', { locale: es })}`
+                  : `${totalActivities} actividades`
+                }
+              </div>
+              {selectedWeek && (
+                <button
+                  onClick={() => setSelectedWeek(null)}
+                  className="text-xs text-cyan-400 hover:text-cyan-300"
+                >
+                  Ver todas
+                </button>
+              )}
+            </div>
+
+
+            <div className="bg-gray-900/30 rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 border-b border-gray-800">
+                    <th className="px-4 py-3 font-medium">Fecha</th>
+                    <th className="px-4 py-3 font-medium">Tipo</th>
+                    <th className="px-4 py-3 font-medium">Nombre</th>
+                    <th className="px-4 py-3 font-medium text-right">Distancia</th>
+                    <th className="px-4 py-3 font-medium text-right">Tiempo</th>
+                    <th className="px-4 py-3 font-medium text-right">Ritmo</th>
+                    <th className="px-4 py-3 font-medium text-right">FC</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800/50">
+                  {activities
+                    .filter(a => {
+                      if (!selectedWeek) return true;
+                      const actDate = new Date(a.startTime);
+                      return actDate >= selectedWeek.start && actDate <= selectedWeek.end;
+                    })
+                    .map(a => (
+                      <tr key={a._id} onClick={() => loadActivityDetail(a._id)}
+                        className="hover:bg-gray-800/30 cursor-pointer transition-colors">
+                        <td className="px-4 py-3 text-sm text-gray-400">
+                          {format(new Date(a.startTime), 'dd MMM', { locale: es })}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded ${a.activityCategory === 'cardio_running' ? 'bg-cyan-900/30 text-cyan-400' :
+                            a.activityCategory === 'strength' ? 'bg-amber-900/30 text-amber-400' :
+                              'bg-gray-800 text-gray-400'
+                            }`}>
+                            {a.activityCategory === 'cardio_running' ? 'RUN' :
+                              a.activityCategory === 'strength' ? 'GYM' : a.activityType}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm">{a.name || '--'}</td>
+                        <td className="px-4 py-3 text-sm text-right">
+                          {a.distance > 0 ? `${formatDistance(a.distance)} km` : '--'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right text-gray-400">
+                          {formatDuration(a.duration)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right">
+                          {a.averagePace ? `${formatPace(a.averagePace)}` : '--'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right text-gray-400">
+                          {a.averageHR ? `${Math.round(a.averageHR)}` : '--'}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2">
+                <button onClick={() => loadActivities(currentPage - 1)} disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm text-gray-500 hover:text-white disabled:opacity-30">
+                  Anterior
+                </button>
+                <span className="px-3 py-1 text-sm text-gray-500">
+                  {currentPage} / {totalPages}
+                </span>
+                <button onClick={() => loadActivities(currentPage + 1)} disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm text-gray-500 hover:text-white disabled:opacity-30">
+                  Siguiente
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'goals' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-400">Objetivos</div>
+              <button onClick={() => {
+                setEditingGoal(null);
+                setGoalForm({ name: '', type: 'intermediate', raceType: '10k', distance: '', targetDate: '', targetTime: '', notes: '' });
+                setShowGoalModal(true);
+              }} className="text-sm text-cyan-400 hover:text-cyan-300">
+                + Nuevo objetivo
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {goals.filter(g => !g.completed).map(g => (
+                <div key={g._id} className={`bg-gray-900/30 rounded-lg p-4 border-l-2 ${g.type === 'primary' ? 'border-cyan-500' : 'border-gray-700'
+                  }`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        {g.type === 'primary' && <span className="text-xs text-cyan-400">PRINCIPAL</span>}
+                        <span className="font-medium">{g.name}</span>
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {format(new Date(g.targetDate), 'dd MMMM yyyy', { locale: es })}
+                        {g.targetTime && ` · Objetivo: ${g.targetTime}`}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-light text-cyan-400">
+                        {differenceInDays(new Date(g.targetDate), new Date())}
+                      </div>
+                      <div className="text-xs text-gray-500">días</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={() => deleteGoal(g._id)} className="text-xs text-gray-500 hover:text-red-400">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {selectedActivity && (
+        <ActivityDetail activity={selectedActivity} onClose={() => setSelectedActivity(null)} />
+      )}
+
+      {showGoalModal && (
+
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg max-w-md w-full p-6">
+            <div className="text-lg font-medium mb-4">{editingGoal ? 'Editar' : 'Nuevo'} objetivo</div>
+            <div className="space-y-4">
+              <input type="text" value={goalForm.name} onChange={e => setGoalForm({ ...goalForm, name: e.target.value })}
+                placeholder="Nombre de la carrera" className="w-full bg-gray-800 rounded px-4 py-2 text-sm" />
+              <div className="grid grid-cols-2 gap-4">
+                <select value={goalForm.type} onChange={e => setGoalForm({ ...goalForm, type: e.target.value as any })}
+                  className="bg-gray-800 rounded px-4 py-2 text-sm">
+                  <option value="primary">Principal</option>
+                  <option value="intermediate">Intermedio</option>
+                </select>
+                <select value={goalForm.raceType} onChange={e => setGoalForm({ ...goalForm, raceType: e.target.value })}
+                  className="bg-gray-800 rounded px-4 py-2 text-sm">
+                  <option value="5k">5K</option>
+                  <option value="10k">10K</option>
+                  <option value="half_marathon">Media Maratón</option>
+                  <option value="marathon">Maratón</option>
+                </select>
+              </div>
+              <input type="date" value={goalForm.targetDate} onChange={e => setGoalForm({ ...goalForm, targetDate: e.target.value })}
+                className="w-full bg-gray-800 rounded px-4 py-2 text-sm" />
+              <input type="text" value={goalForm.targetTime} onChange={e => setGoalForm({ ...goalForm, targetTime: e.target.value })}
+                placeholder="Tiempo objetivo (ej: 3:30:00)" className="w-full bg-gray-800 rounded px-4 py-2 text-sm" />
+            </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowGoalModal(false)}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg font-medium"
-              >
+              <button onClick={() => setShowGoalModal(false)} className="flex-1 py-2 text-gray-400 hover:text-white">
                 Cancelar
               </button>
-              <button
-                onClick={saveGoal}
-                disabled={!goalForm.name || !goalForm.targetDate}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 py-2 rounded-lg font-medium"
-              >
-                {editingGoal ? 'Guardar' : 'Crear'}
+              <button onClick={saveGoal} disabled={!goalForm.name || !goalForm.targetDate}
+                className="flex-1 bg-cyan-600 hover:bg-cyan-500 py-2 rounded disabled:opacity-50">
+                Guardar
               </button>
             </div>
           </div>
@@ -1087,12 +859,24 @@ function App() {
   );
 }
 
-// Componente auxiliar
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function MetricCard({ label, value, change, subtitle }: {
+  label: string;
+  value: string;
+  change?: number;
+  subtitle?: string;
+}) {
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <div className="text-sm text-gray-400">{label}</div>
-      <div className="text-2xl font-bold">{value}</div>
+    <div className="bg-gray-900/30 rounded-lg p-4">
+      <div className="text-xs text-gray-500 mb-2">{label}</div>
+      <div className="flex items-end gap-2">
+        <span className="text-2xl font-light">{value}</span>
+        {change !== undefined && change !== 0 && (
+          <span className={`text-xs mb-1 ${change > 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {change > 0 ? '↑' : '↓'} {Math.abs(change)}%
+          </span>
+        )}
+      </div>
+      {subtitle && <div className="text-xs text-gray-600 mt-1">{subtitle}</div>}
     </div>
   );
 }

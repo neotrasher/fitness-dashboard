@@ -2,238 +2,467 @@ import { User } from '../models/User';
 import { Activity } from '../models/Activity';
 
 interface StravaTokens {
-    access_token: string;
-    refresh_token: string;
-    expires_at: number;
-    athlete: any;
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  athlete: any;
 }
 
 export class StravaService {
-    private clientId: string;
-    private clientSecret: string;
-    private redirectUri: string;
+  private clientId: string;
+  private clientSecret: string;
+  private redirectUri: string;
 
-    constructor() {
-        this.clientId = process.env.STRAVA_CLIENT_ID || '';
-        this.clientSecret = process.env.STRAVA_CLIENT_SECRET || '';
-        this.redirectUri = process.env.STRAVA_REDIRECT_URI || '';
+  constructor() {
+    this.clientId = process.env.STRAVA_CLIENT_ID || '';
+    this.clientSecret = process.env.STRAVA_CLIENT_SECRET || '';
+    this.redirectUri = process.env.STRAVA_REDIRECT_URI || '';
+  }
+
+  getAuthUrl(): string {
+    const scope = 'read,activity:read_all';
+    return `https://www.strava.com/oauth/authorize?client_id=${this.clientId}&response_type=code&redirect_uri=${this.redirectUri}&scope=${scope}`;
+  }
+
+  async exchangeToken(code: string): Promise<StravaTokens> {
+    const response = await fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        code,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!response.ok) throw new Error('Failed to exchange token');
+
+    const data = await response.json();
+
+    await User.findOneAndUpdate(
+      { stravaAthleteId: data.athlete.id },
+      {
+        stravaAthleteId: data.athlete.id,
+        stravaAccessToken: data.access_token,
+        stravaRefreshToken: data.refresh_token,
+        stravaTokenExpiresAt: data.expires_at,
+        profile: {
+          firstName: data.athlete.firstname,
+          lastName: data.athlete.lastname,
+          profilePicture: data.athlete.profile,
+        },
+        updatedAt: new Date(),
+      },
+      { upsert: true, returnDocument: 'after' }
+    );
+
+    return data;
+  }
+
+  async refreshToken(userId: string): Promise<string> {
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
+
+    const now = Math.floor(Date.now() / 1000);
+    if (user.stravaTokenExpiresAt && user.stravaTokenExpiresAt > now) {
+      return user.stravaAccessToken || '';
     }
 
-    getAuthUrl(): string {
-        const scope = 'read,activity:read_all';
-        return `https://www.strava.com/oauth/authorize?client_id=${this.clientId}&response_type=code&redirect_uri=${this.redirectUri}&scope=${scope}`;
+    const response = await fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        refresh_token: user.stravaRefreshToken,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    const data = await response.json();
+
+    user.stravaAccessToken = data.access_token;
+    user.stravaRefreshToken = data.refresh_token;
+    user.stravaTokenExpiresAt = data.expires_at;
+    user.updatedAt = new Date();
+    await user.save();
+
+    return data.access_token;
+  }
+
+  async syncActivities(athleteId: number, fullSync: boolean = false): Promise<number> {
+    const user = await User.findOne({ stravaAthleteId: athleteId });
+    if (!user) throw new Error('User not found');
+
+    const now = Math.floor(Date.now() / 1000);
+    let accessToken = user.stravaAccessToken;
+
+    if (user.stravaTokenExpiresAt && user.stravaTokenExpiresAt <= now) {
+      accessToken = await this.refreshToken(user._id.toString());
     }
 
-    async exchangeToken(code: string): Promise<StravaTokens> {
-        const response = await fetch('https://www.strava.com/oauth/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                client_id: this.clientId,
-                client_secret: this.clientSecret,
-                code,
-                grant_type: 'authorization_code',
-            }),
-        });
+    const daysBack = fullSync ? 365 * 10 : 90;
+    const startDate = Math.floor((Date.now() - daysBack * 24 * 60 * 60 * 1000) / 1000);
 
-        if (!response.ok) {
-            throw new Error('Failed to exchange token');
+    let syncedCount = 0;
+    let detailedCount = 0;
+    let page = 1;
+    const perPage = 100;
+    const MAX_DETAILED_PER_SYNC = 80;
+
+    console.log(`🔄 Iniciando sync (fullSync: ${fullSync}, días: ${daysBack})`);
+
+    while (true) {
+      const response = await fetch(
+        `https://www.strava.com/api/v3/athlete/activities?after=${startDate}&per_page=${perPage}&page=${page}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          console.log('⚠️ Rate limit alcanzado en lista de actividades. Espera 15 minutos.');
+          break;
+        }
+        const errorText = await response.text();
+        console.error('Strava API Error:', response.status, errorText);
+        throw new Error(`Failed to fetch activities: ${response.status}`);
+      }
+
+      const activities = await response.json();
+      if (activities.length === 0) break;
+
+      for (const activity of activities) {
+        const existing = await Activity.findOne({ stravaId: activity.id });
+
+        if (existing && existing.hasDetailedData) {
+          syncedCount++;
+          continue;
         }
 
-        const data = await response.json();
+        const isRunning = ['Run', 'VirtualRun', 'TrailRun', 'Treadmill'].includes(activity.type);
+        const shouldGetDetails = isRunning && detailedCount < MAX_DETAILED_PER_SYNC;
 
-        await User.findOneAndUpdate(
-            { stravaAthleteId: data.athlete.id },
-            {
-                stravaAthleteId: data.athlete.id,
-                stravaAccessToken: data.access_token,
-                stravaRefreshToken: data.refresh_token,
-                stravaTokenExpiresAt: data.expires_at,
-                profile: {
-                    firstName: data.athlete.firstname,
-                    lastName: data.athlete.lastname,
-                    profilePicture: data.athlete.profile,
-                },
-                updatedAt: new Date(),
-            },
-            { upsert: true, returnDocument: 'after' }
+        let detailedActivity: any = {};
+        let hasDetailedData = false;
 
+        if (shouldGetDetails) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          detailedActivity = await this.getActivityDetails(activity.id, accessToken as string);
+
+          if (detailedActivity && detailedActivity.id) {
+            hasDetailedData = true;
+            detailedCount++;
+            console.log(`✅ Detalles obtenidos: ${activity.name} (${detailedCount}/${MAX_DETAILED_PER_SYNC})`);
+          }
+        }
+
+        const workoutType = hasDetailedData ? this.classifyWorkout(detailedActivity) : this.classifyWorkoutBasic(activity);
+        const workoutAnalysis = hasDetailedData ? this.analyzeWorkout(detailedActivity) : null;
+        
+        // Categorizar actividad con detección de cinta
+        const { category, subType } = this.categorizeActivity(activity.type, hasDetailedData ? detailedActivity : undefined);
+
+        await Activity.findOneAndUpdate(
+          { stravaId: activity.id },
+          {
+            stravaId: activity.id,
+            activityType: activity.type,
+            activityCategory: category,
+            runningSubType: subType,
+            workoutType: workoutType,
+            sportType: detailedActivity.sport_type || activity.type,
+
+            name: detailedActivity.name || activity.name,
+            description: detailedActivity.description || '',
+            startTime: new Date(activity.start_date),
+            timezone: detailedActivity.timezone,
+
+            duration: activity.moving_time,
+            elapsedTime: activity.elapsed_time,
+
+            distance: activity.distance,
+            elevationGain: activity.total_elevation_gain,
+            elevHigh: detailedActivity.elev_high,
+            elevLow: detailedActivity.elev_low,
+
+            averagePace: activity.distance > 0
+              ? (activity.moving_time / 60) / (activity.distance / 1000)
+              : 0,
+            averageSpeed: detailedActivity.average_speed || activity.average_speed,
+            maxSpeed: detailedActivity.max_speed || activity.max_speed,
+
+            averageHR: detailedActivity.average_heartrate || activity.average_heartrate,
+            maxHR: detailedActivity.max_heartrate || activity.max_heartrate,
+
+            averageCadence: detailedActivity.average_cadence,
+            averageWatts: detailedActivity.average_watts,
+            maxWatts: detailedActivity.max_watts,
+            weightedAverageWatts: detailedActivity.weighted_average_watts,
+
+            calories: detailedActivity.calories || activity.kilojoules || 0,
+            sufferScore: detailedActivity.suffer_score,
+
+            gear: detailedActivity.gear ? {
+              id: detailedActivity.gear.id,
+              name: detailedActivity.gear.name,
+              nickname: detailedActivity.gear.nickname,
+              distance: detailedActivity.gear.distance,
+            } : undefined,
+            deviceName: detailedActivity.device_name,
+
+            map: detailedActivity.map ? {
+              polyline: detailedActivity.map.polyline,
+              summaryPolyline: detailedActivity.map.summary_polyline,
+            } : undefined,
+
+            laps: hasDetailedData ? detailedActivity.laps?.map((lap: any) => ({
+              lap_index: lap.lap_index,
+              distance: lap.distance,
+              elapsed_time: lap.elapsed_time,
+              moving_time: lap.moving_time,
+              average_speed: lap.average_speed,
+              max_speed: lap.max_speed,
+              average_heartrate: lap.average_heartrate,
+              max_heartrate: lap.max_heartrate,
+              average_cadence: lap.average_cadence,
+              average_watts: lap.average_watts,
+              total_elevation_gain: lap.total_elevation_gain,
+              pace_zone: lap.pace_zone,
+            })) : [],
+
+            splitsMetric: hasDetailedData ? detailedActivity.splits_metric?.map((split: any) => ({
+              split: split.split,
+              distance: split.distance,
+              elapsed_time: split.elapsed_time,
+              moving_time: split.moving_time,
+              average_speed: split.average_speed,
+              average_heartrate: split.average_heartrate,
+              elevation_difference: split.elevation_difference,
+              pace_zone: split.pace_zone,
+            })) : [],
+
+            bestEfforts: hasDetailedData ? detailedActivity.best_efforts?.map((effort: any) => ({
+              name: effort.name,
+              distance: effort.distance,
+              elapsed_time: effort.elapsed_time,
+              moving_time: effort.moving_time,
+              pr_rank: effort.pr_rank,
+            })) : [],
+
+            workoutAnalysis: workoutAnalysis,
+
+            source: 'strava',
+            hasDetailedData: hasDetailedData,
+            updatedAt: new Date(),
+          },
+          { upsert: true, returnDocument: 'after' }
         );
 
-        return data;
+        syncedCount++;
+      }
+
+      page++;
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    async refreshToken(userId: string): Promise<string> {
-        const user = await User.findById(userId);
-        if (!user) throw new Error('User not found');
+    console.log(`✅ Sync completado: ${syncedCount} actividades, ${detailedCount} con detalles`);
+    return syncedCount;
+  }
 
-        const now = Math.floor(Date.now() / 1000);
-        if (user.stravaTokenExpiresAt && user.stravaTokenExpiresAt > now) {
-            return user.stravaAccessToken || '';
+  private async getActivityDetails(activityId: number, accessToken: string): Promise<any> {
+    const response = await fetch(
+      `https://www.strava.com/api/v3/activities/${activityId}?include_all_efforts=true`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    if (!response.ok) {
+      console.error(`Failed to get details for activity ${activityId}`);
+      return {};
+    }
+
+    return response.json();
+  }
+
+  private classifyWorkoutBasic(activity: any): string {
+    const name = (activity.name || '').toLowerCase();
+
+    if (/interval|series|repeat/i.test(name)) return 'intervals';
+    if (/tempo|threshold/i.test(name)) return 'tempo';
+    if (/lsd|long/i.test(name)) return 'long_run';
+    if (/easy|recovery|recuper/i.test(name)) return 'easy';
+    if (/race|carrera/i.test(name)) return 'race';
+    if (/fartlek/i.test(name)) return 'fartlek';
+    if (/stride|progres/i.test(name)) return 'easy_strides';
+
+    return 'general';
+  }
+
+  private classifyWorkout(activity: any): string {
+    const name = (activity.name || '').toLowerCase();
+    const description = (activity.description || '').toLowerCase();
+    const text = `${name} ${description}`;
+
+    if (/interval|series|repeat|x\d+|\dx/i.test(text)) return 'intervals';
+    if (/tempo|threshold|lt\s|umbral/i.test(text)) return 'tempo';
+    if (/lsd|long\s*(slow)?\s*(run|distance)?|tirada/i.test(text)) return 'long_run';
+    if (/easy|fácil|facil|recovery|recuper/i.test(text)) return 'easy';
+    if (/race|carrera|competencia|pk|parkrun/i.test(text)) return 'race';
+    if (/fartlek/i.test(text)) return 'fartlek';
+    if (/hill|cuesta|subida/i.test(text)) return 'hills';
+    if (/stride|progres/i.test(text)) return 'easy_strides';
+
+    if (activity.laps && activity.laps.length > 1) {
+      const paces = activity.laps
+        .filter((lap: any) => lap.distance > 200)
+        .map((lap: any) => lap.average_speed);
+
+      if (paces.length >= 2) {
+        const maxPace = Math.max(...paces);
+        const minPace = Math.min(...paces);
+        const variation = ((maxPace - minPace) / minPace) * 100;
+
+        if (variation > 15) return 'intervals';
+        if (variation > 8) return 'tempo';
+      }
+    }
+
+    const distance = activity.distance || 0;
+    const avgHR = activity.average_heartrate || 0;
+
+    if (distance > 15000) return 'long_run';
+    if (distance < 8000 && avgHR < 140) return 'easy';
+
+    return 'general';
+  }
+
+  private analyzeWorkout(activity: any): any {
+    const laps = activity.laps || [];
+
+    if (laps.length < 2) {
+      return { type: 'unknown', confidence: 0 };
+    }
+
+    const significantLaps = laps.filter((lap: any) => lap.distance > 200);
+
+    if (significantLaps.length < 2) {
+      return { type: 'unknown', confidence: 0 };
+    }
+
+    const paces = significantLaps.map((lap: any) => {
+      if (lap.distance > 0 && lap.moving_time > 0) {
+        return (lap.moving_time / 60) / (lap.distance / 1000);
+      }
+      return 0;
+    }).filter((p: number) => p > 0);
+
+    if (paces.length < 2) {
+      return { type: 'unknown', confidence: 0 };
+    }
+
+    const fastestLapPace = Math.min(...paces);
+    const slowestLapPace = Math.max(...paces);
+
+    const avgPace = paces.reduce((a: number, b: number) => a + b, 0) / paces.length;
+    const variance = paces.reduce((sum: number, p: number) => sum + Math.pow(p - avgPace, 2), 0) / paces.length;
+    const paceVariation = Math.sqrt(variance);
+
+    const threshold = avgPace;
+    const fastLaps = paces.filter((p: number) => p < threshold);
+    const slowLaps = paces.filter((p: number) => p >= threshold);
+
+    const avgFastPace = fastLaps.length > 0
+      ? fastLaps.reduce((a: number, b: number) => a + b, 0) / fastLaps.length
+      : 0;
+    const avgSlowPace = slowLaps.length > 0
+      ? slowLaps.reduce((a: number, b: number) => a + b, 0) / slowLaps.length
+      : 0;
+
+    let type = 'general';
+    let confidence = 50;
+
+    const paceDiff = slowestLapPace - fastestLapPace;
+
+    if (paceDiff > 1.5) {
+      type = 'intervals';
+      confidence = Math.min(95, 60 + paceDiff * 10);
+    } else if (paceDiff > 0.5 && paceDiff <= 1.5) {
+      type = 'tempo';
+      confidence = 70;
+    } else if (paceDiff <= 0.5) {
+      type = avgPace > 6 ? 'easy' : 'tempo';
+      confidence = 80;
+    }
+
+    return {
+      type,
+      confidence,
+      fastestLapPace,
+      slowestLapPace,
+      paceVariation,
+      avgFastPace,
+      avgSlowPace,
+    };
+  }
+
+  private categorizeActivity(stravaType: string, detailedActivity?: any): { category: string; subType?: string } {
+    const cardioRunningTypes = ['Run', 'VirtualRun', 'TrailRun', 'Treadmill'];
+    const cyclingTypes = ['Ride', 'VirtualRide', 'MountainBikeRide', 'GravelRide', 'EBikeRide'];
+    const strengthTypes = ['WeightTraining', 'Crossfit', 'Workout'];
+    const swimTypes = ['Swim', 'OpenWaterSwim'];
+    const walkTypes = ['Walk', 'Hike'];
+
+    let category = 'other';
+    let subType: string | undefined;
+
+    if (cardioRunningTypes.includes(stravaType)) {
+      category = 'cardio_running';
+
+      // Detectar subtipo de running
+      if (stravaType === 'Treadmill') {
+        subType = 'treadmill';
+      } else if (stravaType === 'TrailRun') {
+        subType = 'trail';
+      } else if (stravaType === 'VirtualRun') {
+        subType = 'virtual';
+      } else if (detailedActivity) {
+        // Detectar cinta por falta de GPS/elevación
+        const hasMap = detailedActivity.map?.summary_polyline && detailedActivity.map.summary_polyline.length > 50;
+        const hasElevation = (detailedActivity.total_elevation_gain || 0) > 10;
+
+        if (!hasMap && !hasElevation) {
+          subType = 'treadmill';
+        } else if (detailedActivity.sport_type === 'TrailRun') {
+          subType = 'trail';
+        } else {
+          subType = 'outdoor';
         }
-
-        const response = await fetch('https://www.strava.com/oauth/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                client_id: this.clientId,
-                client_secret: this.clientSecret,
-                refresh_token: user.stravaRefreshToken,
-                grant_type: 'refresh_token',
-            }),
-        });
-
-        const data = await response.json();
-
-        user.stravaAccessToken = data.access_token;
-        user.stravaRefreshToken = data.refresh_token;
-        user.stravaTokenExpiresAt = data.expires_at;
-        user.updatedAt = new Date();
-        await user.save();
-
-        return data.access_token;
+      } else {
+        subType = 'outdoor';
+      }
+    } else if (cyclingTypes.includes(stravaType)) {
+      category = 'cardio_cycling';
+    } else if (strengthTypes.includes(stravaType)) {
+      category = 'strength';
+    } else if (swimTypes.includes(stravaType)) {
+      category = 'cardio_swimming';
+    } else if (walkTypes.includes(stravaType)) {
+      category = 'cardio_walking';
     }
 
-    async syncActivities(athleteId: number, fullSync: boolean = false): Promise<number> {
-        const user = await User.findOne({ stravaAthleteId: athleteId });
-        if (!user) throw new Error('User not found');
+    return { category, subType };
+  }
 
-        const now = Math.floor(Date.now() / 1000);
-        let accessToken = user.stravaAccessToken;
+  async getUser(): Promise<any> {
+    return User.findOne();
+  }
 
-        if (user.stravaTokenExpiresAt && user.stravaTokenExpiresAt <= now) {
-            accessToken = await this.refreshToken(user._id.toString());
-        }
+  async getActivityById(activityId: string): Promise<any> {
+    return Activity.findById(activityId);
+  }
 
-        // Sincronizar últimos 365 días (o más si es fullSync)
-        const daysBack = fullSync ? 365 * 10 : 365;
-        const startDate = Math.floor((Date.now() - daysBack * 24 * 60 * 60 * 1000) / 1000);
-
-        let syncedCount = 0;
-        let page = 1;
-        const perPage = 100;
-
-        while (true) {
-            const response = await fetch(
-                `https://www.strava.com/api/v3/athlete/activities?after=${startDate}&per_page=${perPage}&page=${page}`,
-                {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                }
-            );
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Strava API Error:', response.status, errorText);
-                throw new Error(`Failed to fetch activities: ${response.status} - ${errorText}`);
-            }
-
-            const activities = await response.json();
-
-            if (activities.length === 0) break;
-
-            for (const activity of activities) {
-                await Activity.findOneAndUpdate(
-                    { stravaId: activity.id },
-                    {
-                        stravaId: activity.id,
-                        activityType: activity.type,
-                        activityCategory: this.categorizeActivity(activity.type),
-                        startTime: new Date(activity.start_date),
-                        duration: activity.moving_time,
-                        distance: activity.distance,
-                        averageHR: activity.average_heartrate,
-                        maxHR: activity.max_heartrate,
-                        averagePace: activity.distance > 0 ? (activity.moving_time / 60) / (activity.distance / 1000) : 0,
-                        calories: activity.calories || 0,
-                        elevationGain: activity.total_elevation_gain,
-                        name: activity.name,
-                        source: 'strava',
-                    },
-                    { upsert: true, returnDocument: 'after' }
-
-                );
-                syncedCount++;
-            }
-
-            page++;
-
-            // Evitar rate limiting de Strava
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        return syncedCount;
-    }
-
-    // Categorizar actividades en grupos
-    private categorizeActivity(stravaType: string): string {
-        const cardioTypes = ['Run', 'VirtualRun', 'TrailRun', 'Treadmill'];
-        const cyclingTypes = ['Ride', 'VirtualRide', 'MountainBikeRide', 'GravelRide', 'EBikeRide'];
-        const strengthTypes = ['WeightTraining', 'Crossfit', 'Workout'];
-        const swimTypes = ['Swim', 'OpenWaterSwim'];
-        const walkTypes = ['Walk', 'Hike'];
-
-        if (cardioTypes.includes(stravaType)) return 'cardio_running';
-        if (cyclingTypes.includes(stravaType)) return 'cardio_cycling';
-        if (strengthTypes.includes(stravaType)) return 'strength';
-        if (swimTypes.includes(stravaType)) return 'cardio_swimming';
-        if (walkTypes.includes(stravaType)) return 'cardio_walking';
-
-        return 'other';
-    }
-
-    async getAllActivities(): Promise<any[]> {
-        return Activity.find().sort({ startTime: -1 });
-    }
-
-    async getActivitiesByCategory(category: string): Promise<any[]> {
-        return Activity.find({ activityCategory: category }).sort({ startTime: -1 });
-    }
-
-    async getUser(): Promise<any> {
-        return User.findOne();
-    }
-
-    // Obtener estadísticas separadas por categoría
-    async getStats(): Promise<any> {
-        const allActivities = await Activity.find();
-
-        const runningActivities = allActivities.filter(a => a.activityCategory === 'cardio_running');
-        const strengthActivities = allActivities.filter(a => a.activityCategory === 'strength');
-        const cyclingActivities = allActivities.filter(a => a.activityCategory === 'cardio_cycling');
-
-        return {
-            total: {
-                count: allActivities.length,
-                duration: allActivities.reduce((sum, a) => sum + (a.duration || 0), 0),
-                calories: allActivities.reduce((sum, a) => sum + (a.calories || 0), 0),
-            },
-            running: this.calculateCategoryStats(runningActivities),
-            strength: this.calculateCategoryStats(strengthActivities),
-            cycling: this.calculateCategoryStats(cyclingActivities),
-        };
-    }
-
-    private calculateCategoryStats(activities: any[]): any {
-        if (activities.length === 0) {
-            return { count: 0, distance: 0, duration: 0, avgHR: 0, avgPace: 0, calories: 0 };
-        }
-
-        const withHR = activities.filter(a => a.averageHR > 0);
-        const withPace = activities.filter(a => a.averagePace > 0);
-
-        return {
-            count: activities.length,
-            distance: activities.reduce((sum, a) => sum + (a.distance || 0), 0),
-            duration: activities.reduce((sum, a) => sum + (a.duration || 0), 0),
-            calories: activities.reduce((sum, a) => sum + (a.calories || 0), 0),
-            avgHR: withHR.length > 0
-                ? Math.round(withHR.reduce((sum, a) => sum + a.averageHR, 0) / withHR.length)
-                : 0,
-            avgPace: withPace.length > 0
-                ? (withPace.reduce((sum, a) => sum + a.averagePace, 0) / withPace.length).toFixed(2)
-                : 0,
-            maxDistance: Math.max(...activities.map(a => a.distance || 0)),
-            recentActivities: activities.slice(0, 5),
-        };
-    }
+  async getActivityByStravaId(stravaId: number): Promise<any> {
+    return Activity.findOne({ stravaId });
+  }
 }
