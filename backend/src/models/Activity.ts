@@ -1,122 +1,179 @@
 import mongoose from 'mongoose';
 
-// Sub-schemas para datos detallados
 const lapSchema = new mongoose.Schema({
-    lap_index: Number,
-    distance: Number,
-    elapsed_time: Number,
-    moving_time: Number,
-    average_speed: Number,
-    max_speed: Number,
-    average_heartrate: Number,
-    max_heartrate: Number,
-    average_cadence: Number,
-    average_watts: Number,
-    total_elevation_gain: Number,
-    pace_zone: Number,
+  index: Number,
+  startTime: Date,
+  totalTime: Number,       // segundos
+  distance: Number,        // km
+  avgSpeed: Number,        // km/h
+  maxSpeed: Number,        // km/h
+  avgHR: Number,
+  maxHR: Number,
+  avgCadence: Number,      // spm
+  maxCadence: Number,
+  calories: Number,
+  avgPower: Number,        // watts
+  elevationGain: Number,
+  elevationLoss: Number,
+  avgVerticalOscillation: Number,
+  avgStanceTime: Number,
+  avgVerticalRatio: Number,
+  avgStepLength: Number,
+  intensity: String,
+  sport: String,
+  // Campos de Strava
+  paceZone: Number,
+}, { _id: false });
+
+const recordSchema = new mongoose.Schema({
+  timestamp: Date,
+  elapsedTime: Number,
+  distance: Number,        // km
+  speed: Number,           // km/h
+  heartRate: Number,
+  cadence: Number,         // spm
+  temperature: Number,
+  power: Number,
+  verticalOscillation: Number,
+  verticalRatio: Number,
+  stepLength: Number,
+  altitude: Number,
+  lat: Number,
+  lng: Number,
 }, { _id: false });
 
 const splitSchema = new mongoose.Schema({
-    split: Number,
-    distance: Number,
-    elapsed_time: Number,
-    moving_time: Number,
-    average_speed: Number,
-    average_heartrate: Number,
-    elevation_difference: Number,
-    pace_zone: Number,
+  split: Number,
+  distance: Number,
+  elapsedTime: Number,
+  movingTime: Number,
+  avgSpeed: Number,
+  avgHR: Number,
+  elevationDiff: Number,
+  paceZone: Number,
 }, { _id: false });
 
 const bestEffortSchema = new mongoose.Schema({
-    name: String, // "400m", "1K", "5K", "10K"
-    distance: Number,
-    elapsed_time: Number,
-    moving_time: Number,
-    pr_rank: Number,
+  name: String,            // "400m", "1K", "5K", "10K"
+  distance: Number,
+  elapsedTime: Number,
+  movingTime: Number,
+  prRank: Number,
 }, { _id: false });
 
 const gearSchema = new mongoose.Schema({
-    id: String,
-    name: String,
-    nickname: String,
-    distance: Number, // km totales de la zapatilla
+  id: String,
+  name: String,
+  nickname: String,
+  distance: Number,
+}, { _id: false });
+
+const boundingBoxSchema = new mongoose.Schema({
+  north: Number,
+  east: Number,
+  south: Number,
+  west: Number,
 }, { _id: false });
 
 const activitySchema = new mongoose.Schema({
-    // Identificadores
-    stravaId: { type: Number },
+  // Identificadores
+  stravaId: { type: Number },
 
-    // Tipo y clasificación
-    activityType: { type: String, required: true }, // Run, Ride, etc.
-    activityCategory: { type: String, default: 'other' },
-    runningSubType: { type: String }, // outdoor, treadmill, trail, virtual
-    workoutType: { type: String }, // intervals, tempo, lsd, easy, recovery, race
-    sportType: { type: String }, // Run, TrailRun, etc.
+  // Tipo y clasificación
+  activityType: { type: String, required: true },
+  activityCategory: { type: String, default: 'other' },
+  subSport: { type: String },               // treadmill, trail, track, street, generic
+  isIndoor: { type: Boolean, default: false },
+  workoutType: { type: String },            // intervals, tempo, lsd, easy, recovery, race
 
-    // Info básica
-    name: { type: String },
-    description: { type: String },
-    startTime: { type: Date, required: true },
-    timezone: { type: String },
+  // Info básica
+  name: { type: String },
+  description: { type: String },
+  startTime: { type: Date, required: true },
+  timezone: { type: String },
 
-    // Métricas de tiempo
-    duration: { type: Number, required: true }, // moving_time en segundos
-    elapsedTime: { type: Number }, // elapsed_time total
+  // Tiempo
+  duration: { type: Number, required: true },   // segundos activos
+  elapsedTime: { type: Number },                // segundos totales con pausas
 
-    // Métricas de distancia
-    distance: { type: Number, default: 0 },
-    elevationGain: { type: Number },
-    elevHigh: { type: Number },
-    elevLow: { type: Number },
+  // Distancia y elevación
+  distance: { type: Number, default: 0 },       // metros
+  elevationGain: { type: Number },
+  elevationLoss: { type: Number },
+  elevHigh: { type: Number },
+  elevLow: { type: Number },
 
-    // Métricas de ritmo/velocidad
-    averagePace: { type: Number }, // min/km
-    averageSpeed: { type: Number }, // m/s
-    maxSpeed: { type: Number },
+  // Velocidad y ritmo
+  averageSpeed: { type: Number },               // km/h
+  maxSpeed: { type: Number },                   // km/h
+  averagePace: { type: Number },                // min/km (calculado)
 
-    // Métricas cardíacas
-    averageHR: { type: Number },
-    maxHR: { type: Number },
+  // Frecuencia cardíaca
+  averageHR: { type: Number },
+  maxHR: { type: Number },
 
-    // Métricas de running
-    averageCadence: { type: Number },
-    averageWatts: { type: Number },
-    maxWatts: { type: Number },
-    weightedAverageWatts: { type: Number },
+  // Cadencia
+  avgCadence: { type: Number },                 // spm
+  maxCadence: { type: Number },
 
-    // Métricas de esfuerzo
-    calories: { type: Number, default: 0 },
-    sufferScore: { type: Number }, // Relative effort de Strava
+  // Potencia
+  avgPower: { type: Number },                   // watts
+  maxPower: { type: Number },
+  normalizedPower: { type: Number },
 
-    // Equipo
-    gear: gearSchema,
-    deviceName: { type: String },
-    map: {
-        polyline: { type: String },
-        summaryPolyline: { type: String },
-    },
+  // Dinámica de carrera
+  avgVerticalOscillation: { type: Number },     // mm
+  avgStanceTime: { type: Number },              // ms
+  avgVerticalRatio: { type: Number },           // %
+  avgStepLength: { type: Number },              // mm
 
-    // Datos detallados
-    laps: [lapSchema],
-    splitsMetric: [splitSchema], // splits por km
-    bestEfforts: [bestEffortSchema],
+  // Temperatura
+  avgTemperature: { type: Number },
+  maxTemperature: { type: Number },
 
-    // Análisis calculado
-    workoutAnalysis: {
-        type: { type: String }, // auto-detected: intervals, tempo, lsd, easy, etc.
-        confidence: Number, // 0-100
-        fastestLapPace: Number,
-        slowestLapPace: Number,
-        paceVariation: Number, // desviación estándar
-        avgFastPace: Number, // promedio de laps rápidos
-        avgSlowPace: Number, // promedio de laps lentos
-    },
+  // Esfuerzo
+  calories: { type: Number, default: 0 },
+  trainingEffect: { type: Number },
+  anaerobicEffect: { type: Number },
+  sufferScore: { type: Number },
 
-    // Metadata
-    source: { type: String, default: 'strava' },
-    hasDetailedData: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
+  // GPS
+  hasGPS: { type: Boolean, default: false },
+  startLat: { type: Number },
+  startLng: { type: Number },
+  boundingBox: boundingBoxSchema,
+  map: {
+    polyline: { type: String },
+    summaryPolyline: { type: String },
+  },
+
+  // Equipo
+  gear: gearSchema,
+  deviceName: { type: String },
+
+  // Datos detallados
+  laps: [lapSchema],
+  lapCount: { type: Number, default: 0 },
+  records: [recordSchema],
+  splitsMetric: [splitSchema],
+  bestEfforts: [bestEffortSchema],
+
+  // Análisis automático
+  workoutAnalysis: {
+    type: { type: String },
+    confidence: Number,
+    fastestLapPace: Number,
+    slowestLapPace: Number,
+    paceVariation: Number,
+    avgFastPace: Number,
+    avgSlowPace: Number,
+  },
+
+  // Metadata
+  source: { type: String, default: 'strava' },
+  hasDetailedData: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 // Índices

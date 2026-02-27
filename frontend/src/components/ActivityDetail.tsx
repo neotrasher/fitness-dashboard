@@ -3,15 +3,28 @@ import { es } from 'date-fns/locale';
 import { ActivityMap } from './ActivityMap';
 
 interface Lap {
-  lap_index: number;
-  distance: number;
-  moving_time: number;
-  elapsed_time: number;
-  average_speed: number;
+  // Campos nuevos (FIT upload)
+  index?: number;
+  totalTime?: number;
+  avgSpeed?: number;
+  maxSpeed?: number;
+  avgHR?: number;
+  maxHR?: number;
+  avgCadence?: number;
+  avgPower?: number;
+  // Campos Strava (legacy)
+  lap_index?: number;
+  moving_time?: number;
+  elapsed_time?: number;
+  average_speed?: number;
   average_heartrate?: number;
   max_heartrate?: number;
   average_cadence?: number;
+  // Comunes
+  distance: number;
+  calories?: number;
   total_elevation_gain?: number;
+  elevationGain?: number;
 }
 
 interface Split {
@@ -27,10 +40,12 @@ interface Split {
 interface BestEffort {
   name: string;
   distance: number;
-  moving_time: number;
-  elapsed_time: number;
-  start_index: number;
-  end_index: number;
+  moving_time?: number;
+  movingTime?: number;
+  elapsed_time?: number;
+  elapsedTime?: number;
+  start_index?: number;
+  end_index?: number;
 }
 
 interface Activity {
@@ -42,20 +57,39 @@ interface Activity {
   activityCategory: string;
   workoutType?: string;
   runningSubType?: string;
+  subSport?: string;
+  isIndoor?: boolean;
   startTime: string;
   duration: number;
   elapsedTime?: number;
   distance: number;
   elevationGain?: number;
+  elevationLoss?: number;
   averageHR?: number;
   maxHR?: number;
   averagePace?: number;
-  maxPace?: number;
+  averageSpeed?: number;
+  maxSpeed?: number;
   averageCadence?: number;
+  avgCadence?: number;
+  maxCadence?: number;
+  avgPower?: number;
+  normalizedPower?: number;
   calories?: number;
+  trainingEffect?: number;
+  avgTemperature?: number;
+  avgVerticalOscillation?: number;
+  avgStanceTime?: number;
+  avgVerticalRatio?: number;
+  avgStepLength?: number;
   suffer_score?: number;
+  hasGPS?: boolean;
+  startLat?: number;
+  startLng?: number;
   laps?: Lap[];
+  splitsMetric?: Split[];
   splits_metric?: Split[];
+  bestEfforts?: BestEffort[];
   best_efforts?: BestEffort[];
   map?: {
     summary_polyline?: string;
@@ -76,17 +110,20 @@ interface Props {
 }
 
 export function ActivityDetail({ activity, onClose }: Props) {
-  const formatPace = (speed: number) => {
-    if (!speed || speed === 0) return '--:--';
-    const pace = 1000 / speed / 60;
-    const mins = Math.floor(pace);
-    const secs = Math.round((pace - mins) * 60);
+
+  // Pace from km/h
+  const formatPaceFromKmh = (kmh: number) => {
+    if (!kmh || kmh <= 0) return '--:--';
+    const paceMins = 60 / kmh;
+    const mins = Math.floor(paceMins);
+    const secs = Math.round((paceMins - mins) * 60);
     if (secs === 60) return `${mins + 1}:00`;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Pace from min/km decimal
   const formatPaceFromMinKm = (pace: number) => {
-    if (!pace) return '--:--';
+    if (!pace || pace <= 0) return '--:--';
     const mins = Math.floor(pace);
     const secs = Math.round((pace - mins) * 60);
     if (secs === 60) return `${mins + 1}:00`;
@@ -94,45 +131,82 @@ export function ActivityDetail({ activity, onClose }: Props) {
   };
 
   const formatDuration = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
+    const totalSecs = Math.round(seconds); // fix decimals
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
     if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   const formatDistance = (meters: number) => (meters / 1000).toFixed(2);
 
+  // Lap helpers — support both Strava and FIT field names
+  const getLapTime = (lap: Lap) => lap.totalTime || lap.moving_time || lap.elapsed_time || 0;
+  const getLapSpeed = (lap: Lap) => lap.avgSpeed || lap.average_speed || 0;
+  const getLapHR = (lap: Lap) => lap.avgHR || lap.average_heartrate || 0;
+  const getLapCadence = (lap: Lap) => {
+    // FIT: already multiplied x2 in parser
+    if (lap.avgCadence) return lap.avgCadence;
+    // Strava: single-leg, multiply x2
+    if (lap.average_cadence) return lap.average_cadence * 2;
+    return 0;
+  };
+  const getLapDistance = (lap: Lap) => {
+    // FIT: distance in km, Strava: distance in meters
+    const d = lap.distance || 0;
+    return d < 50 ? d * 1000 : d; // if < 50, likely km → convert to meters
+  };
+
+  // Elevation: FIT returns km, Strava returns meters
+  const getElevationMeters = (elev?: number) => {
+    if (!elev || elev === 0) return null;
+    return elev < 10 ? Math.round(elev * 1000) : Math.round(elev); // if < 10, likely km
+  };
+
+  // Cadence: FIT already x2, Strava needs x2
+  const getSessionCadence = () => {
+    if (activity.avgCadence) return activity.avgCadence; // FIT: already correct
+    if (activity.averageCadence) return activity.averageCadence * 2; // Strava: x2
+    return 0;
+  };
+
+  // Pace display
+  const getPaceDisplay = () => {
+    if (activity.averagePace && activity.averagePace > 0) return formatPaceFromMinKm(activity.averagePace);
+    if (activity.averageSpeed && activity.averageSpeed > 0) return formatPaceFromKmh(activity.averageSpeed);
+    return '--:--';
+  };
+
   const WORKOUT_LABELS: Record<string, string> = {
-    intervals: 'Intervalos',
-    tempo: 'Tempo',
-    long_run: 'Largo',
-    easy: 'Fácil',
-    recovery: 'Recuperación',
-    race: 'Carrera',
-    fartlek: 'Fartlek',
-    general: 'General'
+    intervals: 'Intervalos', tempo: 'Tempo', long_run: 'Largo',
+    easy: 'Fácil', recovery: 'Recuperación', race: 'Carrera',
+    fartlek: 'Fartlek', general: 'General'
   };
 
   const SUBTYPE_LABELS: Record<string, string> = {
-    outdoor: 'Calle',
-    treadmill: 'Cinta',
-    trail: 'Trail',
-    virtual: 'Virtual'
+    outdoor: 'Calle', treadmill: 'Cinta', trail: 'Trail',
+    virtual: 'Virtual', generic: 'General', street: 'Calle', track: 'Pista'
   };
 
-  // Calculate lap stats for visualization
   const laps = activity.laps || [];
-  const splits = activity.splits_metric || [];
-  const bestEfforts = activity.best_efforts || [];
+  const splits = activity.splitsMetric || activity.splits_metric || [];
+  const bestEfforts = activity.bestEfforts || activity.best_efforts || [];
+  const elevMeters = getElevationMeters(activity.elevationGain);
+  const cadence = getSessionCadence();
 
-  const maxLapPace = laps.length > 0 ? Math.max(...laps.map(l => l.average_speed)) : 0;
-  const maxSplitPace = splits.length > 0 ? Math.max(...splits.map(s => s.average_speed)) : 0;
-  const maxLapDistance = laps.length > 0 ? Math.max(...laps.map(l => l.distance)) : 0;
+  const lapSpeeds = laps.map(l => getLapSpeed(l)).filter(s => s > 0);
+  const maxLapSpeed = lapSpeeds.length > 0 ? Math.max(...lapSpeeds) : 0;
+  const minLapSpeed = lapSpeeds.length > 0 ? Math.min(...lapSpeeds) : 0;
+  const lapDistances = laps.map(l => getLapDistance(l));
+  const maxLapDist = lapDistances.length > 0 ? Math.max(...lapDistances) : 0;
+
+  const subType = activity.subSport || activity.runningSubType;
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-start justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-[#0a0a0f] border border-gray-800 rounded-lg max-w-4xl w-full my-8">
+
         {/* Header */}
         <div className="border-b border-gray-800 p-6">
           <div className="flex justify-between items-start">
@@ -147,10 +221,13 @@ export function ActivityDetail({ activity, onClose }: Props) {
                     {WORKOUT_LABELS[activity.workoutType] || activity.workoutType}
                   </span>
                 )}
-                {activity.runningSubType && (
+                {subType && subType !== 'generic' && (
                   <span className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded">
-                    {SUBTYPE_LABELS[activity.runningSubType] || activity.runningSubType}
+                    {SUBTYPE_LABELS[subType] || subType}
                   </span>
+                )}
+                {activity.isIndoor && (
+                  <span className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded">Indoor</span>
                 )}
               </div>
             </div>
@@ -173,7 +250,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
             <div className="text-sm text-gray-500">tiempo</div>
           </div>
           <div>
-            <div className="text-3xl font-light">{formatPaceFromMinKm(activity.averagePace || 0)}</div>
+            <div className="text-3xl font-light">{getPaceDisplay()}</div>
             <div className="text-sm text-gray-500">/km</div>
           </div>
           <div>
@@ -186,11 +263,11 @@ export function ActivityDetail({ activity, onClose }: Props) {
         <div className="grid grid-cols-5 gap-4 p-6 border-b border-gray-800 text-sm">
           <div>
             <div className="text-gray-500 mb-1">Elevación</div>
-            <div className="font-medium">{activity.elevationGain ? `${Math.round(activity.elevationGain)} m` : '--'}</div>
+            <div className="font-medium">{elevMeters !== null ? `${elevMeters} m` : '0 m'}</div>
           </div>
           <div>
             <div className="text-gray-500 mb-1">Cadencia</div>
-            <div className="font-medium">{activity.averageCadence ? `${Math.round(activity.averageCadence * 2)} spm` : '--'}</div>
+            <div className="font-medium">{cadence > 0 ? `${Math.round(cadence)} spm` : '--'}</div>
           </div>
           <div>
             <div className="text-gray-500 mb-1">FC Máx</div>
@@ -198,13 +275,43 @@ export function ActivityDetail({ activity, onClose }: Props) {
           </div>
           <div>
             <div className="text-gray-500 mb-1">Calorías</div>
-            <div className="font-medium">{activity.calories ? `${Math.round(activity.calories)}` : '--'}</div>
+            <div className="font-medium">{activity.calories ? Math.round(activity.calories) : '--'}</div>
           </div>
           <div>
             <div className="text-gray-500 mb-1">Zapatillas</div>
             <div className="font-medium truncate">{activity.gear?.name || '--'}</div>
           </div>
         </div>
+
+        {/* Running Dynamics (FIT only) */}
+        {(activity.avgVerticalOscillation || activity.avgStanceTime || activity.avgPower) && (
+          <div className="grid grid-cols-4 gap-4 p-6 border-b border-gray-800 text-sm">
+            {activity.avgPower ? (
+              <div>
+                <div className="text-gray-500 mb-1">Potencia</div>
+                <div className="font-medium">{Math.round(activity.avgPower)} W</div>
+              </div>
+            ) : null}
+            {activity.avgVerticalOscillation ? (
+              <div>
+                <div className="text-gray-500 mb-1">Oscilación V.</div>
+                <div className="font-medium">{activity.avgVerticalOscillation.toFixed(1)} mm</div>
+              </div>
+            ) : null}
+            {activity.avgStanceTime ? (
+              <div>
+                <div className="text-gray-500 mb-1">Tiempo contacto</div>
+                <div className="font-medium">{Math.round(activity.avgStanceTime)} ms</div>
+              </div>
+            ) : null}
+            {activity.avgVerticalRatio ? (
+              <div>
+                <div className="text-gray-500 mb-1">Ratio vertical</div>
+                <div className="font-medium">{activity.avgVerticalRatio.toFixed(1)}%</div>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {/* Description */}
         {activity.description && (
@@ -230,46 +337,38 @@ export function ActivityDetail({ activity, onClose }: Props) {
             <div className="text-sm text-gray-500 mb-3">Laps ({laps.length})</div>
 
             {/* Visual bars */}
-            <div className="flex items-end gap-1 h-24 mb-4">
-              {(() => {
-                const minPace = Math.min(...laps.map(l => l.average_speed));
-                const maxPace = Math.max(...laps.map(l => l.average_speed));
-                const range = maxPace - minPace || 1;
-                
-                return laps.map((lap, i) => {
-                  const heightPercent = maxLapPace > 0 ? (lap.average_speed / maxLapPace) * 100 : 50;
-                  const widthPercent = maxLapDistance > 0 ? (lap.distance / maxLapDistance) * 100 : 100;
-                  
-                  // Posición relativa: 0 = más lento, 1 = más rápido
-                  const relativePosition = (lap.average_speed - minPace) / range;
-                  
-                  // Interpolar entre azul oscuro (lento) y cyan (rápido)
-                  // HSL: cyan ~185, azul ~220
-                  const hue = 220 - (relativePosition * 35); // 220 → 185
-                  const lightness = 35 + (relativePosition * 25); // 35% → 60%
+            {maxLapSpeed > 0 && (
+              <div className="flex items-end gap-1 h-24 mb-4">
+                {laps.map((lap, i) => {
+                  const speed = getLapSpeed(lap);
+                  const heightPercent = maxLapSpeed > 0 ? (speed / maxLapSpeed) * 100 : 50;
+                  const dist = getLapDistance(lap);
+                  const widthPercent = maxLapDist > 0 ? (dist / maxLapDist) * 100 : 100;
+                  const range = maxLapSpeed - minLapSpeed || 1;
+                  const relativePos = speed > 0 ? (speed - minLapSpeed) / range : 0;
+                  const hue = 220 - (relativePos * 35);
+                  const lightness = 35 + (relativePos * 25);
 
                   return (
                     <div
                       key={i}
                       className="hover:brightness-125 transition-all rounded-t relative group cursor-pointer"
-                      style={{ 
+                      style={{
                         height: `${Math.max(heightPercent, 10)}%`,
-                        flex: `${widthPercent} 0 0`,
+                        flex: `${Math.max(widthPercent, 5)} 0 0`,
                         backgroundColor: `hsl(${hue}, 70%, ${lightness}%)`
                       }}
-                      title={`Lap ${i + 1}: ${formatPace(lap.average_speed)}/km`}
+                      title={`Lap ${i + 1}: ${formatPaceFromKmh(speed)}/km`}
                     >
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 border border-gray-700">
-                        <div className="font-medium">{formatPace(lap.average_speed)}/km</div>
-                        <div className="text-gray-400">{(lap.distance / 1000).toFixed(2)} km</div>
+                        <div className="font-medium">{formatPaceFromKmh(speed)}/km</div>
+                        <div className="text-gray-400">{(dist / 1000).toFixed(2)} km</div>
                       </div>
                     </div>
                   );
-                });
-              })()}
-            </div>
-
-
+                })}
+              </div>
+            )}
 
             {/* Table */}
             <div className="overflow-x-auto">
@@ -285,16 +384,23 @@ export function ActivityDetail({ activity, onClose }: Props) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800/50">
-                  {laps.map((lap, i) => (
-                    <tr key={i} className="text-gray-300">
-                      <td className="py-2 text-gray-500">{i + 1}</td>
-                      <td className="py-2 text-right">{(lap.distance / 1000).toFixed(2)}</td>
-                      <td className="py-2 text-right text-gray-400">{formatDuration(lap.moving_time)}</td>
-                      <td className="py-2 text-right font-medium">{formatPace(lap.average_speed)}</td>
-                      <td className="py-2 text-right text-gray-400">{lap.average_heartrate ? Math.round(lap.average_heartrate) : '--'}</td>
-                      <td className="py-2 text-right text-gray-400">{lap.average_cadence ? Math.round(lap.average_cadence * 2) : '--'}</td>
-                    </tr>
-                  ))}
+                  {laps.map((lap, i) => {
+                    const dist = getLapDistance(lap);
+                    const time = getLapTime(lap);
+                    const speed = getLapSpeed(lap);
+                    const hr = getLapHR(lap);
+                    const cad = getLapCadence(lap);
+                    return (
+                      <tr key={i} className="text-gray-300">
+                        <td className="py-2 text-gray-500">{i + 1}</td>
+                        <td className="py-2 text-right">{(dist / 1000).toFixed(2)}</td>
+                        <td className="py-2 text-right text-gray-400">{time > 0 ? formatDuration(time) : '--'}</td>
+                        <td className="py-2 text-right font-medium">{formatPaceFromKmh(speed)}</td>
+                        <td className="py-2 text-right text-gray-400">{hr > 0 ? Math.round(hr) : '--'}</td>
+                        <td className="py-2 text-right text-gray-400">{cad > 0 ? Math.round(cad) : '--'}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -305,45 +411,35 @@ export function ActivityDetail({ activity, onClose }: Props) {
         {splits.length > 0 && (
           <div className="p-6 border-b border-gray-800">
             <div className="text-sm text-gray-500 mb-3">Splits por km ({splits.length})</div>
-
-            {/* Visual bars */}
             <div className="flex items-end gap-1 h-20 mb-4">
               {(() => {
-                const minPace = Math.min(...splits.map(s => s.average_speed));
-                const maxPace = Math.max(...splits.map(s => s.average_speed));
-                const range = maxPace - minPace || 1;
-                
+                const speeds = splits.map(s => s.average_speed || s.avgSpeed || 0).filter(s => s > 0);
+                const maxS = Math.max(...speeds);
+                const minS = Math.min(...speeds);
+                const range = maxS - minS || 1;
                 return splits.map((split, i) => {
-                  const heightPercent = maxSplitPace > 0 ? (split.average_speed / maxSplitPace) * 100 : 50;
-                  const relativePosition = (split.average_speed - minPace) / range;
-                  const hue = 220 - (relativePosition * 35);
-                  const lightness = 35 + (relativePosition * 25);
-
+                  const speed = split.average_speed || 0;
+                  const heightPercent = maxS > 0 ? (speed / maxS) * 100 : 50;
+                  const relPos = (speed - minS) / range;
+                  const hue = 220 - (relPos * 35);
+                  const lightness = 35 + (relPos * 25);
                   return (
-                    <div
-                      key={i}
-                      className="hover:brightness-125 transition-all rounded-t flex-1 relative group cursor-pointer"
-                      style={{ 
-                        height: `${Math.max(heightPercent, 10)}%`,
-                        backgroundColor: `hsl(${hue}, 70%, ${lightness}%)`
-                      }}
-                    >
+                    <div key={i} className="hover:brightness-125 transition-all rounded-t flex-1 relative group cursor-pointer"
+                      style={{ height: `${Math.max(heightPercent, 10)}%`, backgroundColor: `hsl(${hue}, 70%, ${lightness}%)` }}>
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 border border-gray-700">
                         <div className="font-medium">Km {split.split}</div>
-                        <div className="text-cyan-400">{formatPace(split.average_speed)}/km</div>
+                        <div className="text-cyan-400">{formatPaceFromKmh(speed)}/km</div>
                       </div>
                     </div>
                   );
                 });
               })()}
             </div>
-
-            {/* Compact grid */}
             <div className="grid grid-cols-5 gap-2 text-xs">
               {splits.map((split, i) => (
                 <div key={i} className="bg-gray-900/50 rounded p-2 text-center">
                   <div className="text-gray-500 mb-1">Km {split.split}</div>
-                  <div className="font-medium">{formatPace(split.average_speed)}</div>
+                  <div className="font-medium">{formatPaceFromKmh(split.average_speed)}</div>
                 </div>
               ))}
             </div>
@@ -360,7 +456,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
                 .map((effort, i) => (
                   <div key={i} className="bg-gray-900/50 rounded p-3">
                     <div className="text-xs text-gray-500 mb-1">{effort.name}</div>
-                    <div className="text-lg font-light">{formatDuration(effort.moving_time)}</div>
+                    <div className="text-lg font-light">{formatDuration(effort.movingTime || effort.moving_time || 0)}</div>
                   </div>
                 ))}
             </div>
@@ -370,16 +466,14 @@ export function ActivityDetail({ activity, onClose }: Props) {
         {/* Strava Link */}
         {activity.stravaId && (
           <div className="p-6">
-            <a
-              href={`https://www.strava.com/activities/${activity.stravaId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-[#fc4c02] transition-colors"
-            >
+            <a href={`https://www.strava.com/activities/${activity.stravaId}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-sm text-gray-500 hover:text-[#fc4c02] transition-colors">
               Ver en Strava →
             </a>
           </div>
         )}
+
       </div>
     </div>
   );
