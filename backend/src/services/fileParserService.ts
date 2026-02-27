@@ -1,6 +1,7 @@
 import FitParser from 'fit-file-parser';
 import { XMLParser } from 'fast-xml-parser';
 import fs from 'fs';
+import polyline from '@mapbox/polyline';
 
 export class FileParserService {
 
@@ -129,6 +130,16 @@ export class FileParserService {
 
       return rec;
     });
+    // Generate polyline from GPS points
+    const gpsPoints = records.filter((r: any) => r.lat && r.lng);
+    let summaryPolyline = null;
+    if (gpsPoints.length > 1) {
+      const coords = gpsPoints.map((r: any) => [r.lat, r.lng]);
+      // Sample every Nth point for summary (max ~200 points)
+      const sampleRate = Math.max(1, Math.floor(coords.length / 200));
+      const sampledCoords = coords.filter((_: any, i: number) => i % sampleRate === 0);
+      summaryPolyline = polyline.encode(sampledCoords);
+    }
 
     return {
       activityType: this.mapSportType(session.sport || 'unknown'),
@@ -183,6 +194,9 @@ export class FileParserService {
         west: session.swc_long,
       } : null,
 
+      map: summaryPolyline ? {
+        summaryPolyline: summaryPolyline,
+      } : null,
       laps: laps,
       records: records,
       lapCount: laps.length,

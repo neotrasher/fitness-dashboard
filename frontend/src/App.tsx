@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, subWeeks, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -91,6 +91,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'activities' | 'goals'>('dashboard');
   const [period, setPeriod] = useState('3m');
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [stravaConnected, setStravaConnected] = useState(false);
   const [stravaUser, setStravaUser] = useState<{ name: string; picture: string } | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -98,6 +99,8 @@ function App() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [weeklyVolumes, setWeeklyVolumes] = useState<WeeklyVolume[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [thisWeekStats, setThisWeekStats] = useState({ distance: 0, sessions: 0, duration: 0, avgPace: 0 });
   const [lastWeekStats, setLastWeekStats] = useState({ distance: 0, sessions: 0, duration: 0, avgPace: 0 });
@@ -160,6 +163,8 @@ function App() {
       }
     } catch (error) {
       console.error('Error checking Strava:', error);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -167,6 +172,32 @@ function App() {
     const res = await fetch(`${API_URL}/strava/auth`);
     const data = await res.json();
     window.location.href = data.url;
+  };
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_URL}/activities/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Actividad cargada!");
+        await loadAllData();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (error) {
+      console.error("Error uploading:", error);
+      alert("Error subiendo archivo");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const syncStrava = async () => {
@@ -396,6 +427,14 @@ function App() {
   };
 
 
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
+        <div className="text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
+
   if (!stravaConnected) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
@@ -442,6 +481,13 @@ function App() {
                 ))}
               </div>
 
+              {/* Upload FIT/GPX */}
+              <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".gpx,.fit" className="hidden" />
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="text-gray-500 hover:text-white transition-colors" title="Subir FIT/GPX">
+                <svg className={`w-5 h-5 ${uploading ? "animate-pulse" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </button>
               <button onClick={syncStrava} disabled={loading}
                 className="text-gray-500 hover:text-white transition-colors">
                 <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">

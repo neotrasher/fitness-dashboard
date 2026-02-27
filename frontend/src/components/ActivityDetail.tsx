@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ActivityMap } from './ActivityMap';
+import { ActivityCharts } from './ActivityCharts';
 
 interface Lap {
   // Campos nuevos (FIT upload)
@@ -329,6 +330,11 @@ export function ActivityDetail({ activity, onClose }: Props) {
               <ActivityMap encodedPolyline={activity.map.summary_polyline || activity.map.summaryPolyline || activity.map.polyline || ''} />
             </div>
           </div>
+        )}
+
+        {/* Charts */}
+        {activity.records && activity.records.length > 0 && (
+          <ActivityCharts records={activity.records} />
         )}
 
         {/* Laps */}
