@@ -88,7 +88,7 @@ const WORKOUT_LABELS: Record<string, string> = {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'activities' | 'goals'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'activities' | 'goals' | 'coach'>('dashboard');
   const [period, setPeriod] = useState('3m');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -111,6 +111,7 @@ function App() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedWeek, setSelectedWeek] = useState<{ start: Date; end: Date } | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [totalActivities, setTotalActivities] = useState(0);
 
@@ -126,6 +127,10 @@ function App() {
     notes: '',
   });
 
+  // Coach IA states
+  const [coachMessages, setCoachMessages] = useState<{role: string; content: string}[]>([]);
+  const [coachInput, setCoachInput] = useState("");
+  const [coachLoading, setCoachLoading] = useState(false);
   useEffect(() => {
     checkStravaStatus();
     loadGoals();
@@ -345,6 +350,31 @@ function App() {
     loadGoals();
   };
 
+  const sendCoachMessage = async () => {
+    if (!coachInput.trim()) return;
+    const userMessage = { role: "user", content: coachInput };
+    setCoachMessages(prev => [...prev, userMessage]);
+    setCoachInput("");
+    setCoachLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/activities/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: coachInput,
+          conversationHistory: coachMessages,
+          period
+        }),
+      });
+      const data = await res.json();
+      setCoachMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+    } catch (error) {
+      setCoachMessages(prev => [...prev, { role: "assistant", content: "Error al conectar con el coach. Intenta de nuevo." }]);
+    } finally {
+      setCoachLoading(false);
+    }
+  };
+
   const formatPace = (pace: number) => {
     if (!pace) return '--:--';
     const mins = Math.floor(pace);
@@ -416,8 +446,8 @@ function App() {
 
 
   const thisWeekDays = eachDayOfInterval({
-    start: startOfWeek(new Date(), { weekStartsOn: 1 }),
-    end: endOfWeek(new Date(), { weekStartsOn: 1 })
+    start: startOfWeek(subWeeks(new Date(), weekOffset), { weekStartsOn: 1 }),
+    end: endOfWeek(subWeeks(new Date(), weekOffset), { weekStartsOn: 1 })
   });
 
   const getActivitiesForDay = (date: Date) => {
@@ -459,12 +489,12 @@ function App() {
             <div className="flex items-center gap-8">
               <span className="text-xl font-light tracking-tight">RUNNING</span>
               <nav className="flex gap-1">
-                {(['dashboard', 'activities', 'goals'] as const).map(tab => (
+                {(['dashboard', 'activities', 'goals', 'coach'] as const).map(tab => (
                   <button key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'
                       }`}>
-                    {tab === 'dashboard' ? 'Dashboard' : tab === 'activities' ? 'Actividades' : 'Objetivos'}
+                    {tab === 'dashboard' ? 'Dashboard' : tab === 'activities' ? 'Actividades' : tab === 'goals' ? 'Objetivos' : 'Coach IA'}
                   </button>
                 ))}
               </nav>
@@ -611,7 +641,17 @@ function App() {
             </div>
 
             <div className="bg-gray-900/30 rounded-lg p-6">
-              <div className="text-sm text-gray-400 mb-4">Esta semana</div>
+              <div className="flex items-center justify-between mb-4">
+                <button onClick={() => setWeekOffset(weekOffset + 1)} className="text-gray-500 hover:text-white p-1">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div className="text-sm text-gray-400">
+                  {weekOffset === 0 ? "Esta semana" : weekOffset === 1 ? "Semana pasada" : `Hace ${weekOffset} semanas`}
+                </div>
+                <button onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))} disabled={weekOffset === 0} className="text-gray-500 hover:text-white p-1 disabled:opacity-30">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
               <div className="grid grid-cols-7 gap-2">
                 {thisWeekDays.map(day => {
                   const dayActivities = getActivitiesForDay(day);
@@ -857,6 +897,54 @@ function App() {
           </div>
         )}
       </main>
+
+        {activeTab === "coach" && (
+          <div className="space-y-6">
+            <div className="bg-gray-900/30 rounded-lg p-6">
+              <div className="text-sm text-gray-400 mb-4">🤖 Coach IA - Llama 3.2</div>
+              
+              <div className="h-96 overflow-y-auto mb-4 space-y-4">
+                {coachMessages.length === 0 && (
+                  <div className="text-center text-gray-500 py-12">
+                    <div className="text-4xl mb-4">🏃</div>
+                    <div>¡Hola! Soy tu coach de running.</div>
+                    <div className="text-sm mt-2">Pregúntame sobre tu entrenamiento, ritmos, objetivos...</div>
+                  </div>
+                )}
+                {coachMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-lg px-4 py-2 ${msg.role === "user" ? "bg-cyan-900/50 text-white" : "bg-gray-800 text-gray-200"}`}>
+                      <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
+                    </div>
+                  </div>
+                ))}
+                {coachLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-800 rounded-lg px-4 py-2 text-gray-400">Pensando...</div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={coachInput}
+                  onChange={(e) => setCoachInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendCoachMessage()}
+                  placeholder="Pregunta a tu coach..."
+                  className="flex-1 bg-gray-800 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                />
+                <button
+                  onClick={sendCoachMessage}
+                  disabled={coachLoading || !coachInput.trim()}
+                  className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-lg disabled:opacity-50"
+                >
+                  Enviar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       {selectedActivity && (
         <ActivityDetail activity={selectedActivity} onClose={() => setSelectedActivity(null)} />
