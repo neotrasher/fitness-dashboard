@@ -159,13 +159,13 @@ function App() {
       const data = await res.json();
       setStravaConnected(data.connected);
       if (data.user) setStravaUser(data.user);
-      if (data.connected) {
-        fetch(`${API_URL}/strava/sync`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullSync: false })
-        }).catch(console.error);
-      }
+      //       if (data.connected) {
+      //         fetch(`${API_URL}/strava/sync`, {
+      //           method: 'POST',
+      //           headers: { 'Content-Type': 'application/json' },
+      //           body: JSON.stringify({ fullSync: false })
+      //         }).catch(console.error);
+      //       }
     } catch (error) {
       console.error('Error checking Strava:', error);
     } finally {
