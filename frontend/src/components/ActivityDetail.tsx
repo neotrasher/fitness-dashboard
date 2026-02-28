@@ -191,7 +191,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
     virtual: 'Virtual', generic: 'General', street: 'Calle', track: 'Pista'
   };
 
-  const laps = activity.laps || [];
+  const laps = (activity.laps || []).filter(lap => (lap.totalTime || lap.elapsed_time || 0) > 10);
   const splits = activity.splitsMetric || activity.splits_metric || [];
   const bestEfforts = activity.bestEfforts || activity.best_efforts || [];
   const elevMeters = getElevationMeters(activity.elevationGain);
@@ -257,7 +257,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
           </div>
           <div>
             <div className="text-3xl font-light">{activity.averageHR ? Math.round(activity.averageHR) : '--'}</div>
-            <div className="text-sm text-gray-500">bpm</div>
+            <div className="text-sm text-gray-500">FC prom</div>
           </div>
         </div>
 
