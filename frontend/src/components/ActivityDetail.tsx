@@ -113,8 +113,9 @@ interface Props {
 export function ActivityDetail({ activity, onClose }: Props) {
 
   // Pace from km/h
-  const formatPaceFromKmh = (kmh: number) => {
-    if (!kmh || kmh <= 0) return '--:--';
+  const formatPaceFromSpeed = (speed: number) => {
+    if (!speed || speed <= 0) return '--:--';
+    const kmh = speed * 3.6; // m/s to km/h
     const paceMins = 60 / kmh;
     const mins = Math.floor(paceMins);
     const secs = Math.round((paceMins - mins) * 60);
@@ -175,7 +176,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
   // Pace display
   const getPaceDisplay = () => {
     if (activity.averagePace && activity.averagePace > 0) return formatPaceFromMinKm(activity.averagePace);
-    if (activity.averageSpeed && activity.averageSpeed > 0) return formatPaceFromKmh(activity.averageSpeed);
+    if (activity.averageSpeed && activity.averageSpeed > 0) return formatPaceFromSpeed(activity.averageSpeed);
     return '--:--';
   };
 
@@ -364,10 +365,10 @@ export function ActivityDetail({ activity, onClose }: Props) {
                         flex: `${Math.max(widthPercent, 5)} 0 0`,
                         backgroundColor: `hsl(${hue}, 70%, ${lightness}%)`
                       }}
-                      title={`Lap ${i + 1}: ${formatPaceFromKmh(speed)}/km`}
+                      title={`Lap ${i + 1}: ${formatPaceFromSpeed(speed)}/km`}
                     >
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 border border-gray-700">
-                        <div className="font-medium">{formatPaceFromKmh(speed)}/km</div>
+                        <div className="font-medium">{formatPaceFromSpeed(speed)}/km</div>
                         <div className="text-gray-400">{(dist / 1000).toFixed(2)} km</div>
                       </div>
                     </div>
@@ -401,7 +402,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
                         <td className="py-2 text-gray-500">{i + 1}</td>
                         <td className="py-2 text-right">{(dist / 1000).toFixed(2)}</td>
                         <td className="py-2 text-right text-gray-400">{time > 0 ? formatDuration(time) : '--'}</td>
-                        <td className="py-2 text-right font-medium">{formatPaceFromKmh(speed)}</td>
+                        <td className="py-2 text-right font-medium">{formatPaceFromSpeed(speed)}</td>
                         <td className="py-2 text-right text-gray-400">{hr > 0 ? Math.round(hr) : '--'}</td>
                         <td className="py-2 text-right text-gray-400">{cad > 0 ? Math.round(cad) : '--'}</td>
                       </tr>
@@ -424,7 +425,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
                 const minS = Math.min(...speeds);
                 const range = maxS - minS || 1;
                 return splits.map((split, i) => {
-                  const speed = split.average_speed || 0;
+                  const speed = split.avgSpeed || split.average_speed || 0;
                   const heightPercent = maxS > 0 ? (speed / maxS) * 100 : 50;
                   const relPos = (speed - minS) / range;
                   const hue = 220 - (relPos * 35);
@@ -434,7 +435,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
                       style={{ height: `${Math.max(heightPercent, 10)}%`, backgroundColor: `hsl(${hue}, 70%, ${lightness}%)` }}>
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 border border-gray-700">
                         <div className="font-medium">Km {split.split}</div>
-                        <div className="text-cyan-400">{formatPaceFromKmh(speed)}/km</div>
+                        <div className="text-cyan-400">{formatPaceFromSpeed(speed)}/km</div>
                       </div>
                     </div>
                   );
@@ -445,7 +446,7 @@ export function ActivityDetail({ activity, onClose }: Props) {
               {splits.map((split, i) => (
                 <div key={i} className="bg-gray-900/50 rounded p-2 text-center">
                   <div className="text-gray-500 mb-1">Km {split.split}</div>
-                  <div className="font-medium">{formatPaceFromKmh(split.average_speed)}</div>
+                  <div className="font-medium">{formatPaceFromSpeed(split.avgSpeed || split.average_speed)}</div>
                 </div>
               ))}
             </div>
